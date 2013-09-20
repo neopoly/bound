@@ -47,7 +47,7 @@ describe Bound do
   end
 
   describe 'optional attributes' do
-    UserWithoutAge = Bound.new(:name, :optional => [:age])
+    UserWithoutAge = Bound.new(:name).optional(:age)
 
     it 'sets optional attributes' do
       [hash, object].each do |subject|
