@@ -18,23 +18,17 @@ class Bound
       attr_accessor :attributes, :optionals
 
       def set_attributes(*attributes)
-        attributes = attributes.dup
-
-        optionals = extract_optionals(attributes)
-
-        self.optionals = optionals
-        attr_accessor(*optionals)
-
         self.attributes = attributes
-        attr_accessor(*attributes)
+        attr_accessor *attributes
+
+        self.optionals = []
       end
 
-      def extract_optionals(attributes)
-        if attributes.last.kind_of? Hash
-          attributes.pop[:optional]
-        else
-          []
-        end
+      def optional(*optionals)
+        self.optionals = optionals
+        attr_accessor *optionals
+
+        self
       end
 
       alias :build :new
