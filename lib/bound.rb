@@ -44,6 +44,11 @@ class Bound
       seed
     end
 
+    def method_missing(meth, *args, &blk)
+      attribute = meth.to_s.gsub(/=$/, '')
+      raise ArgumentError.new("Unknown attribute: #{attribute}")
+    end
+
     private
 
     def validate!

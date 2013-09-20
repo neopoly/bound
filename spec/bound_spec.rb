@@ -35,6 +35,17 @@ describe Bound do
     end
   end
 
+  it 'fails if attribute is unknown' do
+    hash[:gender] = "M"
+    subject = hash
+
+    exception = assert_raises ArgumentError, subject.inspect do
+      User.new(subject)
+    end
+
+    assert_match(/gender/, exception.message)
+  end
+
   describe 'optional attributes' do
     UserWithoutAge = Bound.new(:name, :optional => [:age])
 
