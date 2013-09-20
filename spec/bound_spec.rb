@@ -8,6 +8,15 @@ describe Bound do
 
   it 'sets all attributes' do
     [hash, object].each do |subject|
+      user = User.build(subject)
+
+      assert_equal hash[:name], user.name
+      assert_equal hash[:age], user.age
+    end
+  end
+
+  it 'also sets all attributes with new instead of build' do
+    [hash, object].each do |subject|
       user = User.new(subject)
 
       assert_equal hash[:name], user.name
@@ -20,7 +29,7 @@ describe Bound do
 
     [hash, object].each do |subject|
       exception = assert_raises ArgumentError, subject.inspect do
-        User.new(subject)
+        User.build(subject)
       end
 
       assert_match(/missing.+age/i, exception.message)
@@ -31,7 +40,7 @@ describe Bound do
     hash[:age] = nil
 
     [hash, object].each do |subject|
-      User.new(subject)
+      User.build(subject)
     end
   end
 
@@ -40,7 +49,7 @@ describe Bound do
     subject = hash
 
     exception = assert_raises ArgumentError, subject.inspect do
-      User.new(subject)
+      User.build(subject)
     end
 
     assert_match(/unknown.+gender/i, exception.message)
@@ -51,7 +60,7 @@ describe Bound do
 
     it 'sets optional attributes' do
       [hash, object].each do |subject|
-        user = UserWithoutAge.new(subject)
+        user = UserWithoutAge.build(subject)
 
         assert_equal hash[:age], user.age
       end
@@ -61,7 +70,7 @@ describe Bound do
       hash.delete :age
 
       [hash, object].each do |subject|
-        UserWithoutAge.new(subject)
+        UserWithoutAge.build(subject)
       end
     end
 
@@ -69,7 +78,7 @@ describe Bound do
       hash[:age] = nil
 
       [hash, object].each do |subject|
-        UserWithoutAge.new(subject)
+        UserWithoutAge.build(subject)
       end
     end
   end

@@ -36,6 +36,8 @@ class Bound
           []
         end
       end
+
+      alias :build :new
     end
 
     def initialize(hash_or_object)
