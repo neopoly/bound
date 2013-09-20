@@ -73,23 +73,21 @@ class Bound
     end
 
     def insert_attributes_into_hash(object)
-      self.class.attributes.inject(@hash) do |h, attr|
+      self.class.attributes.each_with_object(@hash) do |attr, h|
         begin
           h[attr] = object.public_send(attr)
         rescue NoMethodError
           raise ArgumentError.new("Missing attribute: #{attr}")
         end
-        h
       end
     end
 
     def insert_optionals_into_hash(object)
-      self.class.optionals.inject(@hash) do |h, attr|
+      self.class.optionals.each_with_object(@hash) do |attr, h|
         begin
           h[attr] = object.public_send(attr)
         rescue NoMethodError
         end
-        h
       end
     end
   end
