@@ -48,7 +48,7 @@ class Bound
 
     def validate!
       self.class.attributes.each do |attribute|
-        raise ArgumentError unless @hash.key?(attribute)
+        raise ArgumentError.new("Missing attribute: #{attribute}") unless @hash.key?(attribute)
       end
     end
 
@@ -72,7 +72,7 @@ class Bound
         begin
           h[attr] = object.public_send(attr)
         rescue NoMethodError
-          raise ArgumentError.new(attr)
+          raise ArgumentError.new("Missing attribute: #{attr}")
         end
         h
       end

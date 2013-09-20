@@ -19,9 +19,11 @@ describe Bound do
     hash.delete :age
 
     [hash, object].each do |subject|
-      assert_raises ArgumentError, subject.inspect do
+      exception = assert_raises ArgumentError, subject.inspect do
         User.new(subject)
       end
+
+      assert_match(/age/, exception.message)
     end
   end
 
