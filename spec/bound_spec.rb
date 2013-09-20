@@ -23,7 +23,7 @@ describe Bound do
         User.new(subject)
       end
 
-      assert_match(/age/, exception.message)
+      assert_match(/missing.+age/i, exception.message)
     end
   end
 
@@ -43,7 +43,7 @@ describe Bound do
       User.new(subject)
     end
 
-    assert_match(/gender/, exception.message)
+    assert_match(/unknown.+gender/i, exception.message)
   end
 
   describe 'optional attributes' do
