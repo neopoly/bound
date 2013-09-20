@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = Bound::VERSION
   spec.authors       = ["Jakob Holderbaum", "Jan Owiesniak"]
   spec.email         = ["jh@neopoly.de", "jo@neopoly.de"]
-  spec.summary       = %q{Implements a nice helper for fas boundary definitions}
+  spec.summary       = %q{Implements a nice helper for fast boundary definitions}
   spec.homepage      = ""
   spec.license       = "MIT"
 
