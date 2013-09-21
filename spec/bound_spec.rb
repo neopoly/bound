@@ -82,4 +82,19 @@ describe Bound do
       end
     end
   end
-end
+
+  describe 'no attributes' do
+    UserWithoutAttributes = Bound.new
+    let(:hash) { Hash.new }
+
+    it 'works without attributes' do
+      [hash, object, nil].each do |subject|
+        UserWithoutAttributes.build(subject)
+      end
+    end
+
+    it 'works without argument' do
+      UserWithoutAttributes.build
+    end
+  end
+end 

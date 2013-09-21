@@ -34,7 +34,7 @@ class Bound
       alias :build :new
     end
 
-    def initialize(hash_or_object)
+    def initialize(hash_or_object = {})
       build_hash(hash_or_object)
       validate!
       seed
