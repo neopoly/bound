@@ -16,6 +16,10 @@ class HashObject
   def self.new(hash)
     attributes  = hash.keys
     values      = hash.values
-    Struct.new(*attributes).new(*values)
+    if attributes.empty?
+      Class.new
+    else
+      Struct.new(*attributes).new(*values)
+    end
   end
 end
