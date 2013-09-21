@@ -55,6 +55,22 @@ describe Bound do
     assert_match(/unknown.+gender/i, exception.message)
   end
 
+  describe 'inspect' do
+    let(:inspection) { user.inspect }
+    let(:user) { User.build(hash) }
+
+    it 'lists all attributes' do
+      assert_match(/name="foo"/, inspection)
+      assert_match(/age=23/, inspection)
+      assert_match(/User/, inspection)
+      assert_match(/0x[0-9a-f]{14,}/, inspection)
+    end
+
+    it 'does not display @hash' do
+      refute_match(/@hash={.*}/, inspection)
+    end
+  end
+
   describe 'optional attributes' do
     UserWithoutAge = Bound.new(:name).optional(:age)
 

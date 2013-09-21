@@ -45,6 +45,16 @@ class Bound
       raise ArgumentError.new("Unknown attribute: #{attribute}")
     end
 
+    def inspect
+      class_name = self.class.name
+      id = '%0#16x' % (object_id << 1)
+      values = (self.class.attributes + self.class.optionals).map do |attr|
+        "#{attr}=#{public_send(attr).inspect}"
+      end
+
+      (["#<#{class_name}:#{id}"] + values + [">"]).join(" ")
+    end
+
     private
 
     def validate!
