@@ -166,4 +166,22 @@ describe Bound do
 
     end
   end
+
+  describe 'allows optional as constructor' do
+    Person = Bound.optional(:gender)
+
+    it 'works' do
+      assert_nil Person.new.gender
+      assert_equal "M", Person.new(:gender => 'M').gender
+    end
+  end
+
+  describe 'allows nested as constructor' do
+    Car = Bound.nested(:producer => Bound.new(:name))
+
+    it 'works' do
+      assert_raises(ArgumentError) { Car.new }
+      assert_equal "VW", Car.new(:producer => {:name => 'VW'}).producer.name
+    end
+  end
 end 
