@@ -15,18 +15,18 @@ class Bound
 
   class BoundClass
     class << self
-      attr_accessor :attributes, :optionals, :nested
+      attr_accessor :attributes, :optional_attributes, :nested_attributes
 
       def set_attributes(*attributes)
         self.attributes = attributes
         attr_accessor *attributes
 
-        self.optionals  = []
-        self.nested     = []
+        self.optional_attributes  = []
+        self.nested_attributes     = []
       end
 
       def optional(*optionals)
-        self.optionals = optionals
+        self.optional_attributes = optionals
         attr_accessor *optionals
 
         self
@@ -34,7 +34,7 @@ class Bound
 
       def nested(nested_attributes)
         attributes = nested_attributes.keys
-        self.nested = attributes
+        self.nested_attributes = attributes
         self.attributes += attributes
         attr_reader *attributes
         
@@ -67,7 +67,7 @@ class Bound
     def inspect
       class_name = self.class.name
       id = '%0#16x' % (object_id << 1)
-      values = (self.class.attributes + self.class.optionals).map do |attr|
+      values = (self.class.attributes + self.class.optional_attributes).map do |attr|
         "#{attr}=#{public_send(attr).inspect}"
       end
 
@@ -109,7 +109,7 @@ class Bound
       else
         @hash = {}
         insert_into_hash(self.class.attributes, hash_or_object)
-        insert_into_hash(self.class.optionals, hash_or_object)
+        insert_into_hash(self.class.optional_attributes, hash_or_object)
       end
     end
 
