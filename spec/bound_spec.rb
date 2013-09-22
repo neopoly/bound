@@ -149,12 +149,12 @@ describe Bound do
     BloggingUser  = Bound.new(:name).nested(:posts => [Post])
     let(:hash) do
       {
-        :name => 'Steve', 
+        :name => 'Steve',
         :posts => [
           {:title => 'It is christmas'},
           {:title => 'NOT'}
         ]
-      } 
+      }
     end
 
     it 'works with array of nested attributes' do
@@ -198,4 +198,4 @@ describe Bound do
       assert_equal "VW", Car.new(:producer => {:name => 'VW'}).producer.name
     end
   end
-end 
+end

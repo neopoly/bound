@@ -58,7 +58,7 @@ class Bound
         self.nested_attributes += attributes
         self.attributes += attributes
         attr_reader *attributes
-        
+
         attributes.each do |attribute|
           define_method :"#{attribute}=" do |initial_values|
             nested_target = nested_attributes[attribute]
