@@ -113,4 +113,20 @@ describe Bound do
       UserWithoutAttributes.build
     end
   end
+
+  describe 'nested attribute' do
+    Company = Bound.new(:name).nested(:address => Bound.new(:street))
+    EmployedUser = Bound.new(:uid).nested(:company => Company)
+    let(:hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
+
+    it 'works with nested attributes' do
+      [hash, object].each do |subject|
+        user = EmployedUser.build(subject)
+
+        assert_equal hash[:uid],                        user.uid
+        assert_equal hash[:company][:name],             user.company.name
+        assert_equal hash[:company][:address][:street], user.company.address.street
+      end
+    end
+  end
 end 

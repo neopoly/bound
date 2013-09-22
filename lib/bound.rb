@@ -15,18 +15,35 @@ class Bound
 
   class BoundClass
     class << self
-      attr_accessor :attributes, :optionals
+      attr_accessor :attributes, :optionals, :nested
 
       def set_attributes(*attributes)
         self.attributes = attributes
         attr_accessor *attributes
 
-        self.optionals = []
+        self.optionals  = []
+        self.nested     = []
       end
 
       def optional(*optionals)
         self.optionals = optionals
         attr_accessor *optionals
+
+        self
+      end
+
+      def nested(nested_attributes)
+        attributes = nested_attributes.keys
+        self.nested = attributes
+        self.attributes += attributes
+        attr_reader *attributes
+        
+        attributes.each do |attribute|
+          define_method :"#{attribute}=" do |init|
+            nested_bound = nested_attributes[attribute]
+            instance_variable_set :"@#{attribute}", nested_bound.new(init)
+          end
+        end
 
         self
       end
