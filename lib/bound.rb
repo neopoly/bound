@@ -2,14 +2,14 @@ require "bound/version"
 
 class Bound
   def self.new(*args)
-    new_bound_class(*args)
+    new_bound_class.set_attributes(*args)
   end
 
   private
 
-  def self.new_bound_class(*attributes)
+  def self.new_bound_class
     Class.new(BoundClass) do
-      set_attributes(*attributes)
+      initialize_values
     end
   end
 
@@ -17,16 +17,21 @@ class Bound
     class << self
       attr_accessor :attributes, :optional_attributes, :nested_attributes
 
+      def initialize_values
+        self.attributes = []
+        self.optional_attributes = []
+        self.nested_attributes = []
+      end
+
       def set_attributes(*attributes)
-        self.attributes = attributes
+        self.attributes += attributes
         attr_accessor *attributes
 
-        self.optional_attributes  = []
-        self.nested_attributes     = []
+        self
       end
 
       def optional(*optionals)
-        self.optional_attributes = optionals
+        self.optional_attributes += optionals
         attr_accessor *optionals
 
         self
@@ -34,7 +39,7 @@ class Bound
 
       def nested(nested_attributes)
         attributes = nested_attributes.keys
-        self.nested_attributes = attributes
+        self.nested_attributes += attributes
         self.attributes += attributes
         attr_reader *attributes
         
