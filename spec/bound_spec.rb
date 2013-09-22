@@ -115,8 +115,8 @@ describe Bound do
   end
 
   describe 'nested attribute' do
-    Company = Bound.new(:name).nested(:address => Bound.new(:street))
-    EmployedUser = Bound.new(:uid).nested(:company => Company)
+    Company       = Bound.new(:name).nested(:address => Bound.new(:street))
+    EmployedUser  = Bound.new(:uid).nested(:company => Company)
     let(:hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
 
     it 'works with nested attributes' do
@@ -127,6 +127,43 @@ describe Bound do
         assert_equal hash[:company][:name],             user.company.name
         assert_equal hash[:company][:address][:street], user.company.address.street
       end
+    end
+  end
+
+  describe 'array of nested attribute' do
+    Post          = Bound.new(:title)
+    BloggingUser  = Bound.new(:name).nested(:posts => [Post])
+    let(:hash) do
+      {
+        :name => 'Steve', 
+        :posts => [
+          {:title => 'It is christmas'},
+          {:title => 'NOT'}
+        ]
+      } 
+    end
+
+    it 'works with array of nested attributes' do
+      [hash, object].each do |subject|
+        user = BloggingUser.build(subject)
+
+        assert_equal hash[:name],             user.name
+        assert_equal hash[:posts][0][:title], user.posts[0].title
+        assert_equal hash[:posts][1][:title], user.posts[1].title
+      end
+    end
+
+    it 'fails if posts is no array' do
+      hash[:posts] = {:title => 'broken'}
+
+      [hash, object].each do |subject|
+        exception = assert_raises ArgumentError do
+          BloggingUser.build(subject)
+        end
+
+        assert_match(/array/i, exception.message)
+      end
+
     end
   end
 end 

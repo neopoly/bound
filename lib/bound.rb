@@ -39,9 +39,11 @@ class Bound
         attr_reader *attributes
         
         attributes.each do |attribute|
-          define_method :"#{attribute}=" do |init|
-            nested_bound = nested_attributes[attribute]
-            instance_variable_set :"@#{attribute}", nested_bound.new(init)
+          define_method :"#{attribute}=" do |initial_values|
+            nested_target = nested_attributes[attribute]
+            value = extract_values_for_nested_attribute(nested_target, initial_values)
+
+            instance_variable_set :"@#{attribute}", value
           end
         end
 
@@ -73,6 +75,22 @@ class Bound
     end
 
     private
+
+    def build_nested_value(bound_class, init)
+      bound_class.new(init)
+    end
+
+    def extract_values_for_nested_attribute(nested_target, initial_values)
+      if nested_target.kind_of? Array
+        raise ArgumentError.new("Expected #{initial_values.inspect} to be an array") unless initial_values.kind_of? Array
+
+        initial_values.map do |initial_value|
+          build_nested_value(nested_target.first, initial_value)
+        end
+      else
+        build_nested_value(nested_target, initial_values)
+      end
+    end
 
     def validate!
       self.class.attributes.each do |attribute|
