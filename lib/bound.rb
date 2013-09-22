@@ -32,6 +32,10 @@ class Bound
       end
 
       def set_attributes(*attributes)
+        if attributes.any? { |a| !a.kind_of? Symbol }
+          raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
+        end
+
         self.attributes += attributes
         attr_accessor *attributes
 
@@ -39,6 +43,10 @@ class Bound
       end
 
       def optional(*optionals)
+        if optionals.any? { |a| !a.kind_of? Symbol }
+          raise ArgumentError.new("Invalid list of optional attributes: #{optionals.inspect}")
+        end
+
         self.optional_attributes += optionals
         attr_accessor *optionals
 

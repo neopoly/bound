@@ -55,6 +55,20 @@ describe Bound do
     assert_match(/unknown.+gender/i, exception.message)
   end
 
+  describe 'wrong initialization' do
+    it 'fails if new is not called with symbols' do
+      assert_raises ArgumentError do
+        Bound.new(:events => [])
+      end
+    end
+
+    it 'fails if optional is not called with symbols' do
+      assert_raises ArgumentError do
+        Bound.new.optional(:events => [])
+      end
+    end
+  end
+
   describe 'inspect' do
     let(:inspection) { user.inspect }
     let(:user) { User.build(hash) }
