@@ -2,15 +2,15 @@ require "bound/version"
 
 class Bound
   def self.new(*args)
-    new_bound_class.set_attributes(*args)
+    new_bound_class.require(*args)
   end
 
-  def self.nested(*args)
-    new_bound_class.nested(*args)
+  def self.nest(*args)
+    new_bound_class.nest(*args)
   end
 
-  def self.optional(*args)
-    new_bound_class.optional(*args)
+  def self.option(*args)
+    new_bound_class.option(*args)
   end
 
   private
@@ -23,40 +23,40 @@ class Bound
 
   class BoundClass
     class << self
-      attr_accessor :attributes, :optional_attributes, :nested_attributes
+      attr_accessor :required, :optional, :nested
 
       def initialize_values
-        self.attributes = []
-        self.optional_attributes = []
-        self.nested_attributes = []
+        self.required = []
+        self.optional = []
+        self.nested   = []
       end
 
-      def set_attributes(*attributes)
+      def require(*attributes)
         if attributes.any? { |a| !a.kind_of? Symbol }
           raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
         end
 
-        self.attributes += attributes
+        self.required += attributes
         attr_accessor *attributes
 
         self
       end
 
-      def optional(*optionals)
-        if optionals.any? { |a| !a.kind_of? Symbol }
-          raise ArgumentError.new("Invalid list of optional attributes: #{optionals.inspect}")
+      def option(*attributes)
+        if attributes.any? { |a| !a.kind_of? Symbol }
+          raise ArgumentError.new("Invalid list of optional attributes: #{attributes.inspect}")
         end
 
-        self.optional_attributes += optionals
-        attr_accessor *optionals
+        self.optional += attributes
+        attr_accessor *attributes
 
         self
       end
 
-      def nested(nested_attributes)
+      def nest(nested_attributes)
         attributes = nested_attributes.keys
-        self.nested_attributes += attributes
-        self.attributes += attributes
+        self.required += attributes
+        self.nested   += attributes
         attr_reader *attributes
 
         attributes.each do |attribute|
@@ -88,7 +88,7 @@ class Bound
     def inspect
       class_name = self.class.name
       id = '%0#16x' % (object_id << 1)
-      values = (self.class.attributes + self.class.optional_attributes).map do |attr|
+      values = (self.class.required + self.class.optional).map do |attr|
         "#{attr}=#{public_send(attr).inspect}"
       end
 
@@ -114,7 +114,7 @@ class Bound
     end
 
     def validate!
-      self.class.attributes.each do |attribute|
+      self.class.required.each do |attribute|
         raise ArgumentError.new("Missing attribute: #{attribute}") unless @hash.key?(attribute)
       end
     end
@@ -129,8 +129,8 @@ class Bound
         @hash = hash_or_object
       else
         @hash = {}
-        insert_into_hash(self.class.attributes, hash_or_object)
-        insert_into_hash(self.class.optional_attributes, hash_or_object)
+        insert_into_hash(self.class.required, hash_or_object)
+        insert_into_hash(self.class.optional, hash_or_object)
       end
     end
 

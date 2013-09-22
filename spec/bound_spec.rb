@@ -62,9 +62,9 @@ describe Bound do
       end
     end
 
-    it 'fails if optional is not called with symbols' do
+    it 'fails if option is not called with symbols' do
       assert_raises ArgumentError do
-        Bound.new.optional(:events => [])
+        Bound.option(:events => [])
       end
     end
   end
@@ -85,10 +85,10 @@ describe Bound do
     end
   end
 
-  describe 'optional attributes' do
-    UserWithoutAge = Bound.new(:name).optional(:age)
+  describe 'option attributes' do
+    UserWithoutAge = Bound.new(:name).option(:age)
 
-    it 'sets optional attributes' do
+    it 'sets option attributes' do
       [hash, object].each do |subject|
         user = UserWithoutAge.build(subject)
 
@@ -96,7 +96,7 @@ describe Bound do
       end
     end
 
-    it 'works if optional attribute is missing' do
+    it 'works if option attribute is missing' do
       hash.delete :age
 
       [hash, object].each do |subject|
@@ -128,12 +128,12 @@ describe Bound do
     end
   end
 
-  describe 'nested attribute' do
-    Company       = Bound.new(:name).nested(:address => Bound.new(:street))
-    EmployedUser  = Bound.new(:uid).nested(:company => Company)
+  describe 'nest attribute' do
+    Company       = Bound.new(:name).nest(:address => Bound.new(:street))
+    EmployedUser  = Bound.new(:uid).nest(:company => Company)
     let(:hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
 
-    it 'works with nested attributes' do
+    it 'works with nest attributes' do
       [hash, object].each do |subject|
         user = EmployedUser.build(subject)
 
@@ -144,9 +144,9 @@ describe Bound do
     end
   end
 
-  describe 'array of nested attribute' do
+  describe 'array of nest attribute' do
     Post          = Bound.new(:title)
-    BloggingUser  = Bound.new(:name).nested(:posts => [Post])
+    BloggingUser  = Bound.new(:name).nest(:posts => [Post])
     let(:hash) do
       {
         :name => 'Steve',
@@ -157,7 +157,7 @@ describe Bound do
       }
     end
 
-    it 'works with array of nested attributes' do
+    it 'works with array of nest attributes' do
       [hash, object].each do |subject|
         user = BloggingUser.build(subject)
 
@@ -181,8 +181,8 @@ describe Bound do
     end
   end
 
-  describe 'allows optional as constructor' do
-    Person = Bound.optional(:gender)
+  describe 'allows option as constructor' do
+    Person = Bound.option(:gender)
 
     it 'works' do
       assert_nil Person.new.gender
@@ -190,8 +190,8 @@ describe Bound do
     end
   end
 
-  describe 'allows nested as constructor' do
-    Car = Bound.nested(:producer => Bound.new(:name))
+  describe 'allows nest as constructor' do
+    Car = Bound.nest(:producer => Bound.new(:name))
 
     it 'works' do
       assert_raises(ArgumentError) { Car.new }
