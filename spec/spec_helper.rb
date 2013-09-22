@@ -19,7 +19,19 @@ class HashObject
     if attributes.empty?
       Class.new
     else
-      Struct.new(*attributes).new(*values)
+      mapped_values = values.map { |v| map_value(v) }
+      Struct.new(*attributes).new(*mapped_values)
+    end
+  end
+
+  def self.map_value(value)
+    case value
+    when Hash
+      HashObject.new(value)
+    when Array
+      value.map { |v| map_value(v) }
+    else
+      value
     end
   end
 end
