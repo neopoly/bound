@@ -55,6 +55,14 @@ describe Bound do
     assert_match(/unknown.+gender/i, exception.message)
   end
 
+  it 'exposes an attributes method' do
+    user = User.build(hash)
+
+    assert_equal 2, user.attributes.size
+    assert_includes user.attributes, :name
+    assert_includes user.attributes, :age
+  end
+
   describe 'wrong initialization' do
     it 'fails if new is not called with symbols' do
       assert_raises ArgumentError do
@@ -110,6 +118,14 @@ describe Bound do
       [hash, object].each do |subject|
         UserWithoutAge.build(subject)
       end
+    end
+
+    it 'are also included in attributes' do
+      user = UserWithoutAge.build(hash)
+
+      assert_equal 2, user.attributes.size
+      assert_includes user.attributes, :name
+      assert_includes user.attributes, :age
     end
   end
 
@@ -178,6 +194,14 @@ describe Bound do
         assert_match(/array/i, exception.message)
       end
 
+    end
+
+    it 'are also included in attributes' do
+      user = BloggingUser.build(hash)
+
+      assert_equal 2, user.attributes.size
+      assert_includes user.attributes, :name
+      assert_includes user.attributes, :posts
     end
   end
 

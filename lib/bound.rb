@@ -79,6 +79,10 @@ class Bound
       validate!
       seed
     end
+    
+    def attributes
+      self.class.attributes + self.class.optional_attributes
+    end
 
     def method_missing(meth, *args, &blk)
       attribute = meth.to_s.gsub(/=$/, '')
