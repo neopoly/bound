@@ -58,9 +58,9 @@ describe Bound do
   it 'exposes an attributes method' do
     user = User.build(hash)
 
-    assert_equal 2, user.attributes.size
-    assert_includes user.attributes, :name
-    assert_includes user.attributes, :age
+    assert_equal 2, user.__attributes__.size
+    assert_includes user.__attributes__, :name
+    assert_includes user.__attributes__, :age
   end
 
   describe 'wrong initialization' do
@@ -123,9 +123,9 @@ describe Bound do
     it 'are also included in attributes' do
       user = UserWithoutAge.build(hash)
 
-      assert_equal 2, user.attributes.size
-      assert_includes user.attributes, :name
-      assert_includes user.attributes, :age
+      assert_equal 2, user.__attributes__.size
+      assert_includes user.__attributes__, :name
+      assert_includes user.__attributes__, :age
     end
   end
 
@@ -199,9 +199,9 @@ describe Bound do
     it 'are also included in attributes' do
       user = BloggingUser.build(hash)
 
-      assert_equal 2, user.attributes.size
-      assert_includes user.attributes, :name
-      assert_includes user.attributes, :posts
+      assert_equal 2, user.__attributes__.size
+      assert_includes user.__attributes__, :name
+      assert_includes user.__attributes__, :posts
     end
   end
 

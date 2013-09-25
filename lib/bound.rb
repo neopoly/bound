@@ -80,7 +80,7 @@ class Bound
       seed
     end
     
-    def attributes
+    def __attributes__
       self.class.attributes + self.class.optional_attributes
     end
 
