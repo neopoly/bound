@@ -24,6 +24,7 @@ class Bound
   class BoundClass
     class Attribute
       attr_reader :name, :value
+      attr_accessor :nested_class
 
       def initialize(name)
         @name = name
@@ -31,12 +32,16 @@ class Bound
 
       def assign(value)
         @assigned = true
-        @value = value
+        if nested_class
+          @value = assign_nested(value)
+        else
+          @value = value
+        end
       end
 
-      def assign_nested(bound_definition, value)
-        nested_attribute = NestedAttribute.new(bound_definition)
-        nested_attribute.assign_to(self, value)
+      def assign_nested(value)
+        nested_attribute = NestedAttribute.new(nested_class)
+        nested_attribute.resolve(value)
       end
 
       def call_on(object)
@@ -73,8 +78,8 @@ class Bound
         end
       end
 
-      def assign_to(target_attribute, bound_arguments)
-        target_attribute.assign @assigner.resolve(bound_arguments)
+      def resolve(bound_arguments)
+        @assigner.resolve(bound_arguments)
       end
 
       class ArrayAssigner
@@ -103,10 +108,11 @@ class Bound
 
 
     class << self
-      attr_accessor :attrs
+      attr_accessor :attrs, :nested_attr_classes
 
       def initialize_values
         self.attrs = {}
+        self.nested_attr_classes = {}
       end
 
       def set_attributes(*attributes)
@@ -118,8 +124,7 @@ class Bound
           self.attrs[attribute] = RequiredAttribute
         end
 
-        define_attribute_readers attributes
-        define_attribute_writers attributes
+        define_attribute_accessors attributes
 
         self
       end
@@ -133,8 +138,7 @@ class Bound
           self.attrs[attribute] = Attribute
         end
 
-        define_attribute_readers optionals
-        define_attribute_writers optionals
+        define_attribute_accessors optionals
 
         self
       end
@@ -143,11 +147,11 @@ class Bound
         attributes = nested_attributes.keys
 
         attributes.each do |attribute|
-          self.attrs[attribute] = RequiredAttribute
+          self.attrs[attribute]               = RequiredAttribute
+          self.nested_attr_classes[attribute] = nested_attributes[attribute]
         end
 
-        define_attribute_readers attributes
-        define_nested_attribute_writers nested_attributes
+        define_attribute_accessors attributes
 
         self
       end
@@ -155,6 +159,11 @@ class Bound
       alias :build :new
 
       private
+
+      def define_attribute_accessors(attributes)
+        define_attribute_readers attributes
+        define_attribute_writers attributes
+      end
 
       def define_attribute_readers(attributes)
         attributes.each do |attribute|
@@ -168,16 +177,6 @@ class Bound
         attributes.each do |attribute|
           define_method :"#{attribute}=" do |value|
             get_attribute(attribute).assign value
-          end
-        end
-      end
-
-      def define_nested_attribute_writers(nested_attributes)
-        attributes = nested_attributes.keys
-        attributes.each do |attribute|
-          define_method :"#{attribute}=" do |value|
-            bound_definition = nested_attributes[attribute]
-            get_attribute(attribute).assign_nested bound_definition, value
           end
         end
       end
@@ -209,12 +208,14 @@ class Bound
 
     def get_attribute(attribute_name)
       attribute_class = self.class.attrs[attribute_name]
+      nested_class = self.class.nested_attr_classes[attribute_name]
 
       var = :"@#{attribute_name}"
       attribute = instance_variable_get(var)
 
       unless attribute
         attribute = instance_variable_set(var, attribute_class.new(attribute_name))
+        attribute.nested_class = nested_class if nested_class
       end
 
       attribute
