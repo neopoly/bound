@@ -116,14 +116,10 @@ class Bound
 
         attributes.each do |attribute|
           self.attrs[attribute] = RequiredAttribute
-          define_method attribute do
-            get_attribute(attribute).value
-          end
-
-          define_method :"#{attribute}=" do |value|
-            get_attribute(attribute).assign value
-          end
         end
+
+        define_attribute_readers attributes
+        define_attribute_writers attributes
 
         self
       end
@@ -135,15 +131,10 @@ class Bound
 
         optionals.each do |attribute|
           self.attrs[attribute] = Attribute
-
-          define_method attribute do
-            get_attribute(attribute).value
-          end
-
-          define_method :"#{attribute}=" do |value|
-            get_attribute(attribute).assign value
-          end
         end
+
+        define_attribute_readers optionals
+        define_attribute_writers optionals
 
         self
       end
@@ -153,21 +144,43 @@ class Bound
 
         attributes.each do |attribute|
           self.attrs[attribute] = RequiredAttribute
-
-          define_method attribute do
-            get_attribute(attribute).value
-          end
-
-          define_method :"#{attribute}=" do |value|
-            bound_definition = nested_attributes[attribute]
-            get_attribute(attribute).assign_nested bound_definition, value
-          end
         end
+
+        define_attribute_readers attributes
+        define_nested_attribute_writers nested_attributes
 
         self
       end
 
       alias :build :new
+
+      private
+
+      def define_attribute_readers(attributes)
+        attributes.each do |attribute|
+          define_method attribute do
+            get_attribute(attribute).value
+          end
+        end
+      end
+
+      def define_attribute_writers(attributes)
+        attributes.each do |attribute|
+          define_method :"#{attribute}=" do |value|
+            get_attribute(attribute).assign value
+          end
+        end
+      end
+
+      def define_nested_attribute_writers(nested_attributes)
+        attributes = nested_attributes.keys
+        attributes.each do |attribute|
+          define_method :"#{attribute}=" do |value|
+            bound_definition = nested_attributes[attribute]
+            get_attribute(attribute).assign_nested bound_definition, value
+          end
+        end
+      end
     end
 
     def initialize(hash_or_object = {})
