@@ -213,28 +213,6 @@ class Bound
 
       seeder.seed(hash_or_object)
     end
-
-    def build_hash(hash_or_object)
-      case hash_or_object
-      when Hash
-        hash = hash_or_object
-      else
-        hash = {}
-        insert_into_hash(hash, self.class.attributes, hash_or_object)
-        insert_into_hash(hash, self.class.optional_attributes, hash_or_object)
-      end
-
-      hash
-    end
-
-    def insert_into_hash(hash, attributes, object)
-      attributes.each_with_object(hash) do |attr, h|
-        begin
-          h[attr] = object.public_send(attr)
-        rescue NoMethodError
-        end
-      end
-    end
   end
 
   class HashSeeder
