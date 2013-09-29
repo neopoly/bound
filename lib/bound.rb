@@ -54,6 +54,10 @@ class Bound
       def is_assigned?
         !!@assigned
       end
+
+      def inspect
+        "#{@name}=#{@value.inspect}"
+      end
     end
 
     class RequiredAttribute < Attribute
@@ -186,17 +190,6 @@ class Bound
       attribute = meth.to_s.gsub(/=$/, '')
       raise ArgumentError.new("Unknown attribute: #{attribute}")
     end
-
-    def inspect
-      class_name = self.class.name
-      id = '%0#16x' % (object_id << 1)
-      values = (self.class.attributes + self.class.optional_attributes).map do |attr|
-        "#{attr}=#{public_send(attr).inspect}"
-      end
-
-      (["#<#{class_name}:#{id}"] + values + [">"]).join(" ")
-    end
-
 
     def get_attributes
       self.class.attrs.keys.map do |attribute_name|
