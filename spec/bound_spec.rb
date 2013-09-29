@@ -58,9 +58,9 @@ describe Bound do
   it 'exposes an attributes method' do
     user = User.build(hash)
 
-    assert_equal 2, user.__attributes__.size
-    assert_includes user.__attributes__, :name
-    assert_includes user.__attributes__, :age
+    assert_equal 2, user.get_attributes.size
+    assert_includes user.get_attributes.map(&:name), :name
+    assert_includes user.get_attributes.map(&:name), :age
   end
 
   describe 'wrong initialization' do
@@ -123,9 +123,9 @@ describe Bound do
     it 'are also included in attributes' do
       user = UserWithoutAge.build(hash)
 
-      assert_equal 2, user.__attributes__.size
-      assert_includes user.__attributes__, :name
-      assert_includes user.__attributes__, :age
+      assert_equal 2, user.get_attributes.size
+      assert_includes user.get_attributes.map(&:name), :name
+      assert_includes user.get_attributes.map(&:name), :age
     end
   end
 
@@ -199,9 +199,9 @@ describe Bound do
     it 'are also included in attributes' do
       user = BloggingUser.build(hash)
 
-      assert_equal 2, user.__attributes__.size
-      assert_includes user.__attributes__, :name
-      assert_includes user.__attributes__, :posts
+      assert_equal 2, user.get_attributes.size
+      assert_includes user.get_attributes.map(&:name), :name
+      assert_includes user.get_attributes.map(&:name), :posts
     end
   end
 
@@ -222,4 +222,19 @@ describe Bound do
       assert_equal "VW", Car.new(:producer => {:name => 'VW'}).producer.name
     end
   end
+
+  describe '__attributes__' do
+    DeprecatedUser = Bound.new(:name)
+
+    it 'is deprecated' do
+      user = DeprecatedUser.new(:name => 'foo')
+
+      deprecation_warning, _ = capture_io do
+        user.__attributes__
+      end
+
+      assert_match(/DEPRECATED/, deprecation_warning)
+    end
+  end
+
 end
