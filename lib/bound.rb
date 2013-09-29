@@ -34,6 +34,10 @@ class Bound
         @value = value
       end
 
+      def call_on(object)
+        object.public_send @name
+      end
+
       def valid?
         !required? || is_assigned?
       end
@@ -131,9 +135,7 @@ class Bound
     end
 
     def initialize(hash_or_object = {})
-      hash = build_hash(hash_or_object)
-      seed hash
-
+      seed hash_or_object
       validate!
     end
 
@@ -156,13 +158,14 @@ class Bound
       (["#<#{class_name}:#{id}"] + values + [">"]).join(" ")
     end
 
-    private
 
     def get_attributes
       self.class.attrs.keys.map do |attribute_name|
         get_attribute(attribute_name)
       end
     end
+
+    private
 
     def get_attribute(attribute_name)
       attribute_class = self.class.attrs[attribute_name]
@@ -176,6 +179,7 @@ class Bound
 
       attribute
     end
+
 
     def build_nested_value(bound_class, init)
       bound_class.new(init)
@@ -199,8 +203,15 @@ class Bound
       end
     end
 
-    def seed(hash)
-      HashSeeder.new(self).seed(hash)
+    def seed(hash_or_object)
+      case hash_or_object
+      when Hash
+        seeder = HashSeeder.new(self)
+      else
+        seeder = ObjectSeeder.new(self)
+      end
+
+      seeder.seed(hash_or_object)
     end
 
     def build_hash(hash_or_object)
@@ -234,6 +245,25 @@ class Bound
     def seed(hash)
       hash.each do |key, value|
         @receiver.public_send "#{key}=", value
+      end
+    end
+  end
+
+  class ObjectSeeder
+    def initialize(receiver)
+      @receiver = receiver
+    end
+
+    def seed(object)
+      @receiver.get_attributes.each do |attribute|
+        begin
+          value = attribute.call_on(object)
+        rescue NoMethodError => e
+          value = nil
+          raise ArgumentError, "missing #{attribute.name}" if attribute.required?
+        end
+
+        @receiver.public_send "#{attribute.name}=", value
       end
     end
   end
