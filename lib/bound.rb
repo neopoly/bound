@@ -22,6 +22,28 @@ class Bound
   end
 
   class BoundClass
+    class Attribute
+      attr_reader :value
+
+      def initialize(name)
+        @name = name
+      end
+
+      def assign(value)
+        @value = value
+      end
+
+      def optional?
+        true
+      end
+    end
+
+    class RequiredAttribute < Attribute
+      def optional?; false; end
+    end
+
+
+
     class << self
       attr_accessor :attributes, :optional_attributes, :nested_attributes
 
@@ -37,7 +59,15 @@ class Bound
         end
 
         self.attributes += attributes
-        attr_accessor *attributes
+        attributes.each do |attribute|
+          define_method attribute do
+            get_attribute(RequiredAttribute, attribute).value
+          end
+
+          define_method :"#{attribute}=" do |value|
+            get_attribute(RequiredAttribute, attribute).assign value
+          end
+        end
 
         self
       end
@@ -48,7 +78,15 @@ class Bound
         end
 
         self.optional_attributes += optionals
-        attr_accessor *optionals
+        optionals.each do |attribute|
+          define_method attribute do
+            get_attribute(Attribute, attribute).value
+          end
+
+          define_method :"#{attribute}=" do |value|
+            get_attribute(Attribute, attribute).assign value
+          end
+        end
 
         self
       end
@@ -57,14 +95,17 @@ class Bound
         attributes = nested_attributes.keys
         self.nested_attributes += attributes
         self.attributes += attributes
-        attr_reader *attributes
 
         attributes.each do |attribute|
-          define_method :"#{attribute}=" do |initial_values|
-            nested_target = nested_attributes[attribute]
-            value = extract_values_for_nested_attribute(nested_target, initial_values)
+          define_method attribute do
+            get_attribute(RequiredAttribute, attribute).value
+          end
 
-            instance_variable_set :"@#{attribute}", value
+          define_method :"#{attribute}=" do |value|
+            nested_target = nested_attributes[attribute]
+            value = extract_values_for_nested_attribute(nested_target, value)
+
+            get_attribute(RequiredAttribute, attribute).assign value
           end
         end
 
@@ -75,11 +116,11 @@ class Bound
     end
 
     def initialize(hash_or_object = {})
-      build_hash(hash_or_object)
-      validate!
-      seed
+      hash = build_hash(hash_or_object)
+      validate!(hash)
+      seed(hash)
     end
-    
+
     def __attributes__
       self.class.attributes + self.class.optional_attributes
     end
@@ -101,6 +142,17 @@ class Bound
 
     private
 
+    def get_attribute(attribute_class, attribute_name)
+      var = :"@#{attribute_name}"
+      attribute = instance_variable_get(var)
+
+      unless attribute
+        attribute = instance_variable_set(var, attribute_class.new(attribute_name))
+      end
+
+      attribute
+    end
+
     def build_nested_value(bound_class, init)
       bound_class.new(init)
     end
@@ -117,29 +169,31 @@ class Bound
       end
     end
 
-    def validate!
+    def validate!(hash)
       self.class.attributes.each do |attribute|
-        raise ArgumentError.new("Missing attribute: #{attribute}") unless @hash.key?(attribute)
+        raise ArgumentError.new("Missing attribute: #{attribute}") unless hash.key?(attribute)
       end
     end
 
-    def seed
-      HashSeeder.new(self).seed(@hash)
+    def seed(hash)
+      HashSeeder.new(self).seed(hash)
     end
 
     def build_hash(hash_or_object)
       case hash_or_object
       when Hash
-        @hash = hash_or_object
+        hash = hash_or_object
       else
-        @hash = {}
-        insert_into_hash(self.class.attributes, hash_or_object)
-        insert_into_hash(self.class.optional_attributes, hash_or_object)
+        hash = {}
+        insert_into_hash(hash, self.class.attributes, hash_or_object)
+        insert_into_hash(hash, self.class.optional_attributes, hash_or_object)
       end
+
+      hash
     end
 
-    def insert_into_hash(attributes, object)
-      attributes.each_with_object(@hash) do |attr, h|
+    def insert_into_hash(hash, attributes, object)
+      attributes.each_with_object(hash) do |attr, h|
         begin
           h[attr] = object.public_send(attr)
         rescue NoMethodError
