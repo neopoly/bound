@@ -23,31 +23,41 @@ class Bound
 
   class BoundClass
     class Attribute
-      attr_reader :value
+      attr_reader :name, :value
 
       def initialize(name)
         @name = name
       end
 
       def assign(value)
+        @assigned = true
         @value = value
       end
 
-      def optional?
-        true
+      def valid?
+        !required? || is_assigned?
+      end
+
+      def required?
+        false
+      end
+
+      def is_assigned?
+        !!@assigned
       end
     end
 
     class RequiredAttribute < Attribute
-      def optional?; false; end
+      def required?; true; end
     end
 
 
 
     class << self
-      attr_accessor :attributes, :optional_attributes, :nested_attributes
+      attr_accessor :attrs, :attributes, :optional_attributes, :nested_attributes
 
       def initialize_values
+        self.attrs = {}
         self.attributes = []
         self.optional_attributes = []
         self.nested_attributes = []
@@ -60,12 +70,13 @@ class Bound
 
         self.attributes += attributes
         attributes.each do |attribute|
+          self.attrs[attribute] = RequiredAttribute
           define_method attribute do
-            get_attribute(RequiredAttribute, attribute).value
+            get_attribute(attribute).value
           end
 
           define_method :"#{attribute}=" do |value|
-            get_attribute(RequiredAttribute, attribute).assign value
+            get_attribute(attribute).assign value
           end
         end
 
@@ -79,12 +90,14 @@ class Bound
 
         self.optional_attributes += optionals
         optionals.each do |attribute|
+          self.attrs[attribute] = Attribute
+
           define_method attribute do
-            get_attribute(Attribute, attribute).value
+            get_attribute(attribute).value
           end
 
           define_method :"#{attribute}=" do |value|
-            get_attribute(Attribute, attribute).assign value
+            get_attribute(attribute).assign value
           end
         end
 
@@ -97,15 +110,17 @@ class Bound
         self.attributes += attributes
 
         attributes.each do |attribute|
+          self.attrs[attribute] = RequiredAttribute
+
           define_method attribute do
-            get_attribute(RequiredAttribute, attribute).value
+            get_attribute(attribute).value
           end
 
           define_method :"#{attribute}=" do |value|
             nested_target = nested_attributes[attribute]
             value = extract_values_for_nested_attribute(nested_target, value)
 
-            get_attribute(RequiredAttribute, attribute).assign value
+            get_attribute(attribute).assign value
           end
         end
 
@@ -117,8 +132,9 @@ class Bound
 
     def initialize(hash_or_object = {})
       hash = build_hash(hash_or_object)
-      validate!(hash)
-      seed(hash)
+      seed hash
+
+      validate!
     end
 
     def __attributes__
@@ -142,7 +158,15 @@ class Bound
 
     private
 
-    def get_attribute(attribute_class, attribute_name)
+    def get_attributes
+      self.class.attrs.keys.map do |attribute_name|
+        get_attribute(attribute_name)
+      end
+    end
+
+    def get_attribute(attribute_name)
+      attribute_class = self.class.attrs[attribute_name]
+
       var = :"@#{attribute_name}"
       attribute = instance_variable_get(var)
 
@@ -169,9 +193,9 @@ class Bound
       end
     end
 
-    def validate!(hash)
-      self.class.attributes.each do |attribute|
-        raise ArgumentError.new("Missing attribute: #{attribute}") unless hash.key?(attribute)
+    def validate!
+      get_attributes.each do |attribute|
+        raise ArgumentError.new("Missing attribute: #{attribute.name}") unless attribute.valid?
       end
     end
 
