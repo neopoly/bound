@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 describe Bound do
-  User = Bound.new(:name, :age)
+  User = Bound.required(:name, :age)
 
   let(:object)  { HashObject.new(hash) }
   let(:hash)    { {:name => 'foo', :age => 23} }
 
   it 'sets all attributes' do
     [hash, object].each do |subject|
-      user = User.build(subject)
+      user = User.new(subject)
 
       assert_equal hash[:name], user.name
       assert_equal hash[:age], user.age
@@ -29,7 +29,7 @@ describe Bound do
 
     [hash, object].each do |subject|
       exception = assert_raises ArgumentError, subject.inspect do
-        User.build(subject)
+        User.new(subject)
       end
 
       assert_match(/missing.+age/i, exception.message)
@@ -40,7 +40,7 @@ describe Bound do
     hash[:age] = nil
 
     [hash, object].each do |subject|
-      User.build(subject)
+      User.new(subject)
     end
   end
 
@@ -49,14 +49,14 @@ describe Bound do
     subject = hash
 
     exception = assert_raises ArgumentError, subject.inspect do
-      User.build(subject)
+      User.new(subject)
     end
 
     assert_match(/unknown.+gender/i, exception.message)
   end
 
   it 'exposes an attributes method' do
-    user = User.build(hash)
+    user = User.new(hash)
 
     assert_equal 2, user.get_attributes.size
     assert_includes user.get_attributes.map(&:name), :name
@@ -66,20 +66,20 @@ describe Bound do
   describe 'wrong initialization' do
     it 'fails if new is not called with symbols' do
       assert_raises ArgumentError do
-        Bound.new(:events => [])
+        Bound.required(32, "a")
       end
     end
 
     it 'fails if optional is not called with symbols' do
       assert_raises ArgumentError do
-        Bound.new.optional(:events => [])
+        Bound.required(32, "a")
       end
     end
   end
 
   describe 'inspect' do
     let(:inspection) { user.inspect }
-    let(:user) { User.build(hash) }
+    let(:user) { User.new(hash) }
 
     it 'lists all attributes' do
       assert_match(/name="foo"/, inspection)
@@ -94,11 +94,11 @@ describe Bound do
   end
 
   describe 'optional attributes' do
-    UserWithoutAge = Bound.new(:name).optional(:age)
+    UserWithoutAge = Bound.required(:name).optional(:age)
 
     it 'sets optional attributes' do
       [hash, object].each do |subject|
-        user = UserWithoutAge.build(subject)
+        user = UserWithoutAge.new(subject)
 
         assert_equal hash[:age], user.age
       end
@@ -108,7 +108,7 @@ describe Bound do
       hash.delete :age
 
       [hash, object].each do |subject|
-        UserWithoutAge.build(subject)
+        UserWithoutAge.new(subject)
       end
     end
 
@@ -116,7 +116,7 @@ describe Bound do
       hash[:age] = nil
 
       [hash, object].each do |subject|
-        UserWithoutAge.build(subject)
+        UserWithoutAge.new(subject)
       end
     end
 
@@ -135,23 +135,23 @@ describe Bound do
 
     it 'works without attributes' do
       [hash, object, nil].each do |subject|
-        UserWithoutAttributes.build(subject)
+        UserWithoutAttributes.new(subject)
       end
     end
 
     it 'works without argument' do
-      UserWithoutAttributes.build
+      UserWithoutAttributes.new
     end
   end
 
   describe 'nested attribute' do
-    Company       = Bound.new(:name).nested(:address => Bound.new(:street))
-    EmployedUser  = Bound.new(:uid).nested(:company => Company)
+    Company       = Bound.required(:name, :address => Bound.required(:street))
+    EmployedUser  = Bound.required(:uid, :company => Company)
     let(:hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
 
     it 'works with nested attributes' do
       [hash, object].each do |subject|
-        user = EmployedUser.build(subject)
+        user = EmployedUser.new(subject)
 
         assert_equal hash[:uid],                        user.uid
         assert_equal hash[:company][:name],             user.company.name
@@ -161,8 +161,8 @@ describe Bound do
   end
 
   describe 'array of nested attribute' do
-    Post          = Bound.new(:title)
-    BloggingUser  = Bound.new(:name).nested(:posts => [Post])
+    Post          = Bound.required(:title)
+    BloggingUser  = Bound.required(:name, :posts => [Post])
     let(:hash) do
       {
         :name => 'Steve',
@@ -175,7 +175,7 @@ describe Bound do
 
     it 'works with array of nested attributes' do
       [hash, object].each do |subject|
-        user = BloggingUser.build(subject)
+        user = BloggingUser.new(subject)
 
         assert_equal hash[:name],             user.name
         assert_equal hash[:posts][0][:title], user.posts[0].title
@@ -188,7 +188,7 @@ describe Bound do
 
       [hash, object].each do |subject|
         exception = assert_raises ArgumentError do
-          BloggingUser.build(subject)
+          BloggingUser.new(subject)
         end
 
         assert_match(/array/i, exception.message)
@@ -197,7 +197,7 @@ describe Bound do
     end
 
     it 'are also included in attributes' do
-      user = BloggingUser.build(hash)
+      user = BloggingUser.new(hash)
 
       assert_equal 2, user.get_attributes.size
       assert_includes user.get_attributes.map(&:name), :name
@@ -215,7 +215,7 @@ describe Bound do
   end
 
   describe 'allows nested as constructor' do
-    Car = Bound.nested(:producer => Bound.new(:name))
+    Car = Bound.required(:producer => Bound.required(:name))
 
     it 'works' do
       assert_raises(ArgumentError) { Car.new }
@@ -224,7 +224,7 @@ describe Bound do
   end
 
   describe '__attributes__' do
-    DeprecatedUser = Bound.new(:name)
+    DeprecatedUser = Bound.required(:name)
 
     it 'is deprecated' do
       user = DeprecatedUser.new(:name => 'foo')

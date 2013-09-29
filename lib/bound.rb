@@ -13,6 +13,16 @@ class Bound
     new_bound_class.optional(*args)
   end
 
+  def self.required(*args)
+    bound = new_bound_class
+
+    if args.last.kind_of? Hash
+      bound.nested(args.pop)
+    end
+
+    bound.set_attributes(*args)
+  end
+
   private
 
   def self.new_bound_class
