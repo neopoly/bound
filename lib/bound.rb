@@ -34,6 +34,11 @@ class Bound
         @value = value
       end
 
+      def assign_nested(bound_definition, value)
+        nested_attribute = NestedAttribute.new(bound_definition)
+        nested_attribute.assign_to(self, value)
+      end
+
       def call_on(object)
         object.public_send @name
       end
@@ -55,6 +60,42 @@ class Bound
       def required?; true; end
     end
 
+    class NestedAttribute
+      def initialize(bound_definition)
+        if bound_definition.kind_of?(Array)
+          @assigner = ArrayAssigner.new(bound_definition)
+        else
+          @assigner = ValueAssigner.new(bound_definition)
+        end
+      end
+
+      def assign_to(target_attribute, bound_arguments)
+        target_attribute.assign @assigner.resolve(bound_arguments)
+      end
+
+      class ArrayAssigner
+        def initialize(definitions)
+          @bound_class = definitions.first
+        end
+
+        def resolve(arguments_list)
+          raise ArgumentError.new("Expected #{arguments_list.inspect} to be an array") unless arguments_list.kind_of? Array
+          arguments_list.map do |arguments|
+            @bound_class.new(arguments)
+          end
+        end
+      end
+
+      class ValueAssigner
+        def initialize(definition)
+          @bound_class = definition
+        end
+
+        def resolve(arguments)
+          @bound_class.new(arguments)
+        end
+      end
+    end
 
 
     class << self
@@ -121,10 +162,8 @@ class Bound
           end
 
           define_method :"#{attribute}=" do |value|
-            nested_target = nested_attributes[attribute]
-            value = extract_values_for_nested_attribute(nested_target, value)
-
-            get_attribute(attribute).assign value
+            bound_definition = nested_attributes[attribute]
+            get_attribute(attribute).assign_nested bound_definition, value
           end
         end
 
@@ -178,23 +217,6 @@ class Bound
       end
 
       attribute
-    end
-
-
-    def build_nested_value(bound_class, init)
-      bound_class.new(init)
-    end
-
-    def extract_values_for_nested_attribute(nested_target, initial_values)
-      if nested_target.kind_of? Array
-        raise ArgumentError.new("Expected #{initial_values.inspect} to be an array") unless initial_values.kind_of? Array
-
-        initial_values.map do |initial_value|
-          build_nested_value(nested_target.first, initial_value)
-        end
-      else
-        build_nested_value(nested_target, initial_values)
-      end
     end
 
     def validate!
