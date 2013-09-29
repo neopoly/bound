@@ -103,13 +103,10 @@ class Bound
 
 
     class << self
-      attr_accessor :attrs, :attributes, :optional_attributes, :nested_attributes
+      attr_accessor :attrs
 
       def initialize_values
         self.attrs = {}
-        self.attributes = []
-        self.optional_attributes = []
-        self.nested_attributes = []
       end
 
       def set_attributes(*attributes)
@@ -117,7 +114,6 @@ class Bound
           raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
         end
 
-        self.attributes += attributes
         attributes.each do |attribute|
           self.attrs[attribute] = RequiredAttribute
           define_method attribute do
@@ -137,7 +133,6 @@ class Bound
           raise ArgumentError.new("Invalid list of optional attributes: #{optionals.inspect}")
         end
 
-        self.optional_attributes += optionals
         optionals.each do |attribute|
           self.attrs[attribute] = Attribute
 
@@ -155,8 +150,6 @@ class Bound
 
       def nested(nested_attributes)
         attributes = nested_attributes.keys
-        self.nested_attributes += attributes
-        self.attributes += attributes
 
         attributes.each do |attribute|
           self.attrs[attribute] = RequiredAttribute
@@ -182,9 +175,6 @@ class Bound
       validate!
     end
 
-    def __attributes__
-      self.class.attributes + self.class.optional_attributes
-    end
 
     def method_missing(meth, *args, &blk)
       attribute = meth.to_s.gsub(/=$/, '')
@@ -195,6 +185,11 @@ class Bound
       self.class.attrs.keys.map do |attribute_name|
         get_attribute(attribute_name)
       end
+    end
+
+    def __attributes__
+      puts "DEPRECATED: use get_attributes"
+      get_attributes.map(&:name)
     end
 
     private
