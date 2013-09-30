@@ -1,5 +1,7 @@
 # Bound
 
+[![Build Status](https://travis-ci.org/neopoly/bound.png)](https://travis-ci.org/neopoly/bound)
+
 TODO: Write a gem description
 
 ## Installation
