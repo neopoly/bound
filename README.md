@@ -1,6 +1,6 @@
 # Bound
 
-[![Build Status](https://travis-ci.org/neopoly/bound.png)](https://travis-ci.org/neopoly/bound)
+[![Build Status](https://travis-ci.org/neopoly/bound.png)](https://travis-ci.org/neopoly/bound) [![Gem Version](https://badge.fury.io/rb/bound.png)](http://badge.fury.io/rb/bound) [![Code Climate](https://codeclimate.com/github/neopoly/bound.png)](https://codeclimate.com/github/neopoly/bound)
 
 TODO: Write a gem description
 
