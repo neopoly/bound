@@ -256,7 +256,8 @@ class Bound
 
     def seed(hash)
       hash.each do |key, value|
-        @receiver.public_send "#{key}=", value
+        method = "#{key}="
+        @receiver.send method, value
       end
     end
   end
@@ -275,7 +276,12 @@ class Bound
           raise ArgumentError, "missing #{attribute.name}" if attribute.required?
         end
 
-        @receiver.public_send "#{attribute.name}=", value
+        method = "#{attribute.name}="
+        if @receiver.respond_to?(method)
+          @receiver.send method, value
+        else
+          raise NoMethodError, "undefined method `#{method}' for #{self}"
+        end
       end
     end
   end
