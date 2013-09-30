@@ -55,7 +55,7 @@ class Bound
       end
 
       def call_on(object)
-        object.public_send @name
+        object.send @name
       end
 
       def valid?
