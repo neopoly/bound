@@ -89,7 +89,7 @@ describe Bound do
     end
 
     it 'does not display @hash' do
-      refute_match(/@hash={.*}/, inspection)
+      refute_match(/@hash=/, inspection)
     end
   end
 
