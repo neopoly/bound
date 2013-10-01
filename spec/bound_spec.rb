@@ -233,7 +233,7 @@ describe Bound do
         user.__attributes__
       end
 
-      assert_match(/DEPRECATED/, deprecation_warning)
+      assert_match(/deprecated/, deprecation_warning)
     end
   end
 

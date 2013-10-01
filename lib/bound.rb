@@ -210,7 +210,7 @@ class Bound
     end
 
     def __attributes__
-      puts "DEPRECATED: use get_attributes"
+      puts "BoundClass#__attributes__ is deprecated: use get_attributes"
       get_attributes.map(&:name)
     end
 
