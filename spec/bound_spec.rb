@@ -237,4 +237,18 @@ describe Bound do
     end
   end
 
+  describe 'questionmark suffix' do
+    WonderingUser = Bound.required(:asked?)
+
+    let(:hash)    { {:asked? => "YES"} }
+
+    it 'is assign- and readable' do
+      [hash, object].each do |subject|
+        user = WonderingUser.new(subject)
+        assert_equal "YES", user.asked?
+      end
+    end
+  end
+
+
 end
