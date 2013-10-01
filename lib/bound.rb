@@ -55,7 +55,12 @@ class Bound
       end
 
       def call_on(object)
-        object.send @name
+        method = @name
+        if object.respond_to?(method)
+          object.send method
+        else
+          raise NoMethodError, "undefined method `#{method}' for #{object}"
+        end
       end
 
       def valid?
