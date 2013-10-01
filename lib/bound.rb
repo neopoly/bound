@@ -271,7 +271,7 @@ class Bound
       @receiver.get_attributes.each do |attribute|
         begin
           value = attribute.call_on(object)
-        rescue NoMethodError => e
+        rescue NoMethodError
           value = nil
           raise ArgumentError, "missing #{attribute.name}" if attribute.required?
         end
