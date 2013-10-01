@@ -193,6 +193,7 @@ class Bound
     end
 
     def initialize(hash_or_object = {})
+      @attributes = {}
       seed hash_or_object
       validate!
     end
@@ -221,10 +222,12 @@ class Bound
       nested_class = self.class.nested_attr_classes[attribute_name]
 
       var = :"@#{attribute_name}"
-      attribute = instance_variable_get(var)
+#      attribute = instance_variable_get(var)
+      attribute = @attributes[var]
 
       unless attribute
-        attribute = instance_variable_set(var, attribute_class.new(attribute_name))
+#        attribute = instance_variable_set(var, attribute_class.new(attribute_name))
+        attribute = @attributes[var] = attribute_class.new(attribute_name)
         attribute.nested_class = nested_class if nested_class
       end
 
