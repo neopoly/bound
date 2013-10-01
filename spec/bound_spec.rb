@@ -250,5 +250,21 @@ describe Bound do
     end
   end
 
+  describe 'seeding with private methods' do
+    ShyUser = Bound.required(:secret)
+    UserSeed = Class.new do
+      private
+      def secret; 42; end
+    end
+
+    it 'fails like the method does not exists' do
+      exception = assert_raises ArgumentError do
+        ShyUser.new(UserSeed.new)
+      end
+
+      assert_match(/missing.+secret/i, exception.message)
+    end
+  end
+
 
 end
