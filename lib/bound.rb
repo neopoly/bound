@@ -71,7 +71,7 @@ class Bound
       end
 
       def inspect
-        "#{@name}=#{@value.inspect}"
+        @value.inspect
       end
     end
 

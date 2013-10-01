@@ -82,8 +82,8 @@ describe Bound do
     let(:user) { User.new(hash) }
 
     it 'lists all attributes' do
-      assert_match(/name="foo"/, inspection)
-      assert_match(/age=23/, inspection)
+      assert_match(/name=>"foo"/, inspection)
+      assert_match(/age=>23/, inspection)
       assert_match(/User/, inspection)
       assert_match(/0x[0-9a-f]+/, inspection)
     end
