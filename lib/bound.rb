@@ -59,7 +59,7 @@ class Bound
         if object.respond_to?(method)
           object.send method
         else
-          raise ArgumentError, "missing #{method}" if required?
+          raise NoMethodError, "undefined method `#{method}' for #{object}"
         end
       end
 
@@ -277,13 +277,16 @@ class Bound
 
     def seed(object)
       @receiver.get_attributes.each do |attribute|
-        value = attribute.call_on(object)
+        begin
+          value = attribute.call_on(object)
 
-        method = "#{attribute.name}="
-        if @receiver.respond_to?(method)
-          @receiver.send method, value
-        else
-          raise NoMethodError, "undefined method `#{method}' for #{self}"
+          method = "#{attribute.name}="
+          if @receiver.respond_to?(method)
+            @receiver.send method, value
+          else
+            raise NoMethodError, "undefined method `#{method}' for #{self}"
+          end
+        rescue NoMethodError
         end
       end
     end
