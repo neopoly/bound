@@ -266,5 +266,25 @@ describe Bound do
     end
   end
 
+  describe 'seeding with multiple seeds' do
+    FunnyUser = Bound.required(:joke, :nose_color)
+
+    let(:hash) { {:joke => 'Text', :nose_color => 'blue'} }
+
+    it 'overwrites attributes from first to last' do
+      overwriting_hash = {:nose_color => 'RED'}
+      overwriting_object = HashObject.new(overwriting_hash)
+
+      [hash, object].each do |subject|
+        [overwriting_object, overwriting_hash].each do |overwriting_subject|
+          user = FunnyUser.new(subject, overwriting_subject)
+
+          assertion_description = [subject, overwriting_subject].inspect
+          assert_equal 'RED', user.nose_color, assertion_description
+        end
+      end
+    end
+  end
+
 
 end
