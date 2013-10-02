@@ -197,9 +197,9 @@ class Bound
       end
     end
 
-    def initialize(hash_or_object = {})
+    def initialize(seed = {})
       @attributes = {}
-      seed hash_or_object
+      seed_with seed
       validate!
     end
 
@@ -243,15 +243,15 @@ class Bound
       end
     end
 
-    def seed(hash_or_object)
-      case hash_or_object
+    def seed_with(seed)
+      case seed
       when Hash
         seeder = HashSeeder.new(self)
       else
         seeder = ObjectSeeder.new(self)
       end
 
-      seeder.seed(hash_or_object)
+      seeder.seed(seed)
     end
   end
 
