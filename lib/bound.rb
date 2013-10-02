@@ -33,6 +33,8 @@ class Bound
 
   class BoundClass
     class Attribute
+      NotImplemented = Class.new(RuntimeError)
+
       attr_reader :name, :value
       attr_accessor :nested_class
 
@@ -59,7 +61,7 @@ class Bound
         if object.respond_to?(method)
           object.send method
         else
-          raise NoMethodError, "undefined method `#{method}' for #{object}"
+          raise NotImplemented, "undefined method `#{method}' for #{object}"
         end
       end
 
@@ -199,7 +201,7 @@ class Bound
 
     def initialize(*seeds)
       @attributes = {}
-      seeds.each do |seed|
+      seeds.reverse.each do |seed|
         seed_with seed
       end
       validate!
@@ -222,11 +224,11 @@ class Bound
       get_attributes.map(&:name)
     end
 
-    private
-
     def get_attribute(attribute_name)
       attribute_class = self.class.attrs[attribute_name]
       nested_class = self.class.nested_attr_classes[attribute_name]
+
+      return nil if attribute_class.nil?
 
       attribute = @attributes[attribute_name]
 
@@ -238,6 +240,8 @@ class Bound
 
       attribute
     end
+
+    private
 
     def validate!
       get_attributes.each do |attribute|
@@ -264,6 +268,9 @@ class Bound
 
     def seed(hash)
       hash.each do |key, value|
+        attribute = @receiver.get_attribute(key)
+        next if attribute && attribute.is_assigned?
+
         method = "#{key}="
         @receiver.send method, value
       end
@@ -277,17 +284,29 @@ class Bound
 
     def seed(object)
       @receiver.get_attributes.each do |attribute|
+        next if attribute.is_assigned?
+
         begin
           value = attribute.call_on(object)
-
-          method = "#{attribute.name}="
-          if @receiver.respond_to?(method)
-            @receiver.send method, value
-          else
-            raise NoMethodError, "undefined method `#{method}' for #{self}"
-          end
-        rescue NoMethodError
+          assign_to_receiver attribute, value
+        rescue BoundClass::Attribute::NotImplemented
+          # no assignment if object hasn't desired method
+          # this prevents null-assignments
         end
+      end
+    end
+
+    private
+    def assign_to_receiver(attribute, value)
+      method = "#{attribute.name}="
+      send_method @receiver, method, value
+    end
+
+    def send_method(receiver, method, *args)
+      if receiver.respond_to?(method)
+        receiver.send method, *args
+      else
+        raise NoMethodError, "undefined method `#{method}' for #{receiver}"
       end
     end
   end
