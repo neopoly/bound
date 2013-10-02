@@ -210,7 +210,7 @@ class Bound
 
     def method_missing(meth, *args, &blk)
       attribute = meth.to_s.gsub(/=$/, '')
-      raise ArgumentError.new("Unknown attribute: #{attribute}")
+      raise ArgumentError.new("Unknown attribute: #{self.class}##{attribute}")
     end
 
     def get_attributes
@@ -245,7 +245,7 @@ class Bound
 
     def validate!
       get_attributes.each do |attribute|
-        raise ArgumentError.new("Missing attribute: #{attribute.name}") unless attribute.valid?
+        raise ArgumentError.new("Missing attribute: #{self.class}##{attribute.name}") unless attribute.valid?
       end
     end
 
