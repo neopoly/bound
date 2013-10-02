@@ -276,7 +276,7 @@ describe Bound do
       overwriting_object = HashObject.new(overwriting_hash)
 
       [hash, object].each do |subject|
-        [overwriting_object, overwriting_hash].each do |overwriting_subject|
+        [overwriting_hash, overwriting_object].each do |overwriting_subject|
           user = FunnyUser.new(subject, overwriting_subject)
 
           assertion_description = [subject, overwriting_subject].inspect
