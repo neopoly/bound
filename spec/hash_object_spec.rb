@@ -11,7 +11,8 @@ describe HashObject do
       :posts => [
         {:title => 'It is christmas'},
         {:title => 'NOT'}
-      ]
+      ],
+      :living? => true
     }
   end
 
@@ -21,5 +22,6 @@ describe HashObject do
     assert_equal hash[:posts].size,       subject.posts.size
     assert_equal hash[:posts][0][:title], subject.posts[0].title
     assert_equal hash[:posts][1][:title], subject.posts[1].title
+    assert_equal hash[:living?],          subject.living?
   end
 end
