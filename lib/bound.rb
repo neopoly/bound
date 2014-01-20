@@ -219,6 +219,10 @@ class Bound
       end
     end
 
+    def has_attribute?(attr)
+      self.class.attrs.keys.include? attr
+    end
+
     def __attributes__
       puts "BoundClass#__attributes__ is deprecated: use get_attributes"
       get_attributes.map(&:name)

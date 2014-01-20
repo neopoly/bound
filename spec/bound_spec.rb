@@ -15,6 +15,15 @@ describe Bound do
     end
   end
 
+  it 'checks if attribute exists' do
+    [hash, object].each do |subject|
+      user = User.new(subject)
+
+      assert user.has_attribute?(:name)
+      assert user.has_attribute?(:age)
+    end
+  end
+
   it 'also sets all attributes with new instead of build' do
     [hash, object].each do |subject|
       user = User.new(subject)
