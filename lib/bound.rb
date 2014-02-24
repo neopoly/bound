@@ -123,7 +123,13 @@ class Bound
       end
 
       def optional(*attributes)
-        set_attributes :optional, attributes
+        if attributes.last.kind_of? Hash
+          nested_attributes = attributes.pop
+        else
+          nested_attributes = {}
+        end
+
+        set_attributes :optional, attributes, nested_attributes
 
         self
       end

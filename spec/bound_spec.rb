@@ -129,6 +129,44 @@ describe Bound do
     end
   end
 
+  describe 'optional nested attributes' do
+    UserWithProfile = Bound.required(:id).optional(
+      :profile => Bound.required(:age)
+    )
+    let(:hash) do
+      {
+        :id => 12,
+        :profile => {
+          :age => 23
+        }
+      }
+    end
+
+    it 'sets optional attributes' do
+      [hash, object].each do |subject|
+        user = UserWithProfile.new(subject)
+
+        assert_equal hash[:profile][:age], user.profile.age
+      end
+    end
+
+    it 'works if optional attribute is missing' do
+      hash.delete :profile
+
+      [hash, object].each do |subject|
+        UserWithProfile.new(subject)
+      end
+    end
+
+    it 'are also included in attributes' do
+      user = UserWithProfile.new(hash)
+
+      assert_equal 2, user.get_attributes.size
+      assert_includes user.get_attributes.map(&:name), :id
+      assert_includes user.get_attributes.map(&:name), :profile
+    end
+  end
+
   describe 'no attributes' do
     UserWithoutAttributes = Bound.new
     let(:hash) { Hash.new }
