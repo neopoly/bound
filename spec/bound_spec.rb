@@ -24,15 +24,6 @@ describe Bound do
     end
   end
 
-  it 'also sets all attributes with new instead of build' do
-    [hash, object].each do |subject|
-      user = User.new(subject)
-
-      assert_equal hash[:name], user.name
-      assert_equal hash[:age], user.age
-    end
-  end
-
   it 'fails if attribute is missing' do
     hash.delete :age
 
@@ -130,7 +121,7 @@ describe Bound do
     end
 
     it 'are also included in attributes' do
-      user = UserWithoutAge.build(hash)
+      user = UserWithoutAge.new(hash)
 
       assert_equal 2, user.get_attributes.size
       assert_includes user.get_attributes.map(&:name), :name

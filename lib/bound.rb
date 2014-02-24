@@ -173,8 +173,6 @@ class Bound
         self
       end
 
-      alias :build :new
-
       private
 
       def define_attribute_accessors(attributes)
