@@ -2,7 +2,7 @@ require "bound/version"
 
 class Bound
   def self.new(*args)
-    new_bound_class.set_attributes(*args)
+    new_bound_class.required(*args)
   end
 
   def self.nested(*args)
@@ -14,13 +14,7 @@ class Bound
   end
 
   def self.required(*args)
-    bound = new_bound_class
-
-    if args.last.kind_of? Hash
-      bound.nested(args.pop)
-    end
-
-    bound.set_attributes(*args)
+    new_bound_class.required(*args)
   end
 
   private
@@ -132,48 +126,56 @@ class Bound
         self.nested_attr_classes = {}
       end
 
-      def set_attributes(*attributes)
-        if attributes.any? { |a| !a.kind_of? Symbol }
-          raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
-        end
-
-        attributes.each do |attribute|
-          self.attrs[attribute] = RequiredAttribute
-        end
-
-        define_attribute_accessors attributes
-
-        self
-      end
-
-      def optional(*optionals)
-        if optionals.any? { |a| !a.kind_of? Symbol }
-          raise ArgumentError.new("Invalid list of optional attributes: #{optionals.inspect}")
-        end
-
-        optionals.each do |attribute|
-          self.attrs[attribute] = Attribute
-        end
-
-        define_attribute_accessors optionals
+      def optional(*attributes)
+        set_attributes :optional, attributes
 
         self
       end
 
       def nested(nested_attributes)
-        attributes = nested_attributes.keys
+        set_attributes :required, [], nested_attributes
 
-        attributes.each do |attribute|
-          self.attrs[attribute]               = RequiredAttribute
-          self.nested_attr_classes[attribute] = nested_attributes[attribute]
+        self
+      end
+
+      def required(*attributes)
+        if attributes.last.kind_of? Hash
+          nested_attributes = attributes.pop
+        else
+          nested_attributes = {}
         end
 
-        define_attribute_accessors attributes
+        set_attributes :required, attributes, nested_attributes
 
         self
       end
 
       private
+
+      def set_attributes(flag, attributes, nested_attributes = {})
+        is_optional = flag == :optional
+
+        if attributes.any? { |a| !a.kind_of? Symbol }
+          raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
+        end
+
+        attributes.each do |attribute|
+          if is_optional
+            self.attrs[attribute] = Attribute
+          else
+            self.attrs[attribute] = RequiredAttribute
+          end
+        end
+
+        define_attribute_accessors attributes
+
+        if nested_attributes.any?
+          set_attributes flag, nested_attributes.keys
+          nested_attributes.each do |attribute_name, attribute_class|
+            self.nested_attr_classes[attribute_name] = attribute_class
+          end
+        end
+      end
 
       def define_attribute_accessors(attributes)
         define_attribute_readers attributes
