@@ -5,10 +5,6 @@ class Bound
     new_bound_class.required(*args)
   end
 
-  def self.nested(*args)
-    new_bound_class.nested(*args)
-  end
-
   def self.optional(*args)
     new_bound_class.optional(*args)
   end
@@ -128,12 +124,6 @@ class Bound
 
       def optional(*attributes)
         set_attributes :optional, attributes
-
-        self
-      end
-
-      def nested(nested_attributes)
-        set_attributes :required, [], nested_attributes
 
         self
       end
