@@ -2,9 +2,9 @@
 
 [![Build Status](https://travis-ci.org/neopoly/bound.png)](https://travis-ci.org/neopoly/bound) [![Gem Version](https://badge.fury.io/rb/bound.png)](http://badge.fury.io/rb/bound) [![Code Climate](https://codeclimate.com/github/neopoly/bound.png)](https://codeclimate.com/github/neopoly/bound)
 
-*In short:* The mission: Bring the notion of interfaces to ruby.
+**In short:** The mission: Bring the notion of interfaces to ruby.
 
-*More detailed:* When you buil separated or distributed architectures in ruby,
+**More detailed:** When you buil separated or distributed architectures in ruby,
 you probably encountered the problem of stale mocks or wrongly mocked interfaces
 of specific services at the boundaries of the different domains.
 
@@ -14,7 +14,7 @@ request, to speak in more technical terms. By implementing the request and
 response objects through `Bound`, you get validated interfaces and more explicit
 and self documenting code for free.
 
-See *Usage* below for more details with a concrete example.
+See **Usage** below for more details with a concrete example.
 
 ## Installation
 
@@ -89,6 +89,32 @@ class UserDesk::RegistrationService
   # ...
 end
 ```
+
+The consumer would now instanciate the boundary class instead of just
+passing arbitrary arguments to the service:
+
+```ruby
+registration = UserDesk::RegistrationService::Registration.new(
+  :email => params[:email],
+  :password => params[:password]
+)
+
+result = registration_service.register_account(registration)
+
+do_stuff_with(result.user_uid)
+```
+
+Side note: the `Registration` bound here would also accept an `Object`, which provides the
+methods `email` and `password`.
+
+Bound would also loudly fail, if one of the required arguments is omitted or a
+not known argument is provided. (Specific additional features like nested and
+optional arguments can be seen in the specs).
+
+By concretinzing the boundaries, the overal structure of your architecture will
+become more rigid and solid. The mocking part on the consumer-side would only
+occur for the actual `register_account` call, which is fairly trivial now from
+the perspective of boundaries (known object in, known object out).
 
 ## Contributing
 
