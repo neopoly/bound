@@ -32,7 +32,63 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Consider the folowing scenario:
+
+A generic domain which is responsible for administration and management of user
+registrations:
+
+```ruby
+module UserDesk
+end
+```
+
+It will somehow provide access to a registration service which gives you the
+possibility to create new user accounts:
+
+```ruby
+class UserDesk::RegistrationService
+  def register_account(email, password)
+    ensure_validity!(email)
+    user_uid = do_things_on_a_magical_repository(email, password)
+
+    user_uid
+  end
+
+  private
+  # ...
+end
+```
+Since the scope of this service can (and will) be very large, it will be painful
+to provide consistency around the different other domains, which get an instance
+of the registration service injected. Especially order changes in a larger
+argument list or added optional arguments could lead to false passing tests and
+therefor probably runtime bugs.
+
+By utilizing `Bound`, you could implement this service like following:
+
+```ruby
+class UserDesk::RegistrationService
+  Registration = Bound.required(
+    :email,
+    :password
+  )
+
+  SuccessfulRegistration = Bound.required(:user_uid)
+
+  def register_account(registration)
+    ensure_validity!(registration.email)
+    user_uid = do_things_on_a_magical_repository(
+      registration.email,
+      registration.password
+    )
+
+    SuccessfulRegistration.new(:user_uid => user_uid)
+  end
+
+  private
+  # ...
+end
+```
 
 ## Contributing
 
