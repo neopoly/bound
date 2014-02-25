@@ -4,12 +4,12 @@
 
 **In short:** The mission: Bring the notion of interfaces to ruby.
 
-**More detailed:** When you buil separated or distributed architectures in ruby,
+**More detailed:** When you build separated or distributed architectures in ruby,
 you probably encountered the problem of stale mocks or wrongly mocked interfaces
 of specific services at the boundaries of the different domains.
 
 To tackle this problem, we use `Bound`. Instead of providing just a list of
-arguments to a poor little boundary method, it will just accept on argument, its
+arguments to a poor little boundary method, it will just accept an argument, its
 request, to speak in more technical terms. By implementing the request and
 response objects through `Bound`, you get validated interfaces and more explicit
 and self documenting code for free.
@@ -58,6 +58,7 @@ class UserDesk::RegistrationService
   # ...
 end
 ```
+
 Since the scope of this service can (and will) be very large, it will be painful
 to provide consistency around the different other domains, which get an instance
 of the registration service injected. Especially order changes in a larger
@@ -104,14 +105,14 @@ result = registration_service.register_account(registration)
 do_stuff_with(result.user_uid)
 ```
 
-Side note: the `Registration` bound here would also accept an `Object`, which provides the
+Side note: the `Registration` bound here would also accept any `Object`, which provides the
 methods `email` and `password`.
 
 Bound would also loudly fail, if one of the required arguments is omitted or a
-not known argument is provided. (Specific additional features like nested and
+unknown argument is provided. (Specific additional features like nested and
 optional arguments can be seen in the specs).
 
-By concretinzing the boundaries, the overal structure of your architecture will
+By concretinzing the boundaries, the overall structure of your architecture will
 become more rigid and solid. The mocking part on the consumer-side would only
 occur for the actual `register_account` call, which is fairly trivial now from
 the perspective of boundaries (known object in, known object out).
