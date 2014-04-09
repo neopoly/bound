@@ -241,6 +241,14 @@ class Bound
       attribute
     end
 
+    def ==(other)
+      return false unless other
+
+      get_attributes.all? do |attribute|
+        attribute.value == other.public_send(attribute.name)
+      end
+    end
+
     private
 
     def validate!

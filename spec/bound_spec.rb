@@ -63,6 +63,32 @@ describe Bound do
     assert_includes user.get_attributes.map(&:name), :age
   end
 
+  describe 'equality' do
+    let(:user) { User.new(hash) }
+
+    it 'is given if all the attributes are same' do
+      reference_user = User.new(hash)
+
+      assert_equal user, reference_user
+    end
+
+    it 'is not given if attributes differ' do
+      reference_user = User.new(hash.merge(:name => 'DIFF'))
+
+      refute_equal user, reference_user
+    end
+
+    it 'is given for other objects with same signature' do
+      reference_user = Struct.new(:name, :age).new(user.name, user.age)
+
+      assert_equal user, reference_user
+    end
+
+    it 'is not given for nil' do
+      refute_equal user, nil
+    end
+  end
+
   describe 'wrong initialization' do
     it 'fails if new is not called with symbols' do
       assert_raises ArgumentError do
@@ -218,6 +244,20 @@ describe Bound do
         assert_equal hash[:name],             user.name
         assert_equal hash[:posts][0][:title], user.posts[0].title
         assert_equal hash[:posts][1][:title], user.posts[1].title
+      end
+    end
+
+    describe 'equality' do
+      let(:user) { BloggingUser.new(hash) }
+      it 'is given if the nested attributes are equal' do
+        assert_equal BloggingUser.new(hash), user
+      end
+
+      it 'is not given if nested attributes differ' do
+        second_hash = Marshal.load(Marshal.dump hash)
+        second_hash[:posts][0][:title] = 'DIFFERENT'
+
+        refute_equal BloggingUser.new(second_hash), user
       end
     end
 
