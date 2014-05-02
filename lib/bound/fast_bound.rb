@@ -13,6 +13,13 @@ class Bound
       self
     end
 
+    def optional(*attributes)
+      attributes.each do |attribute|
+        delegator.register_optional attribute
+      end
+      self
+    end
+
     private
     def delegator
       @delegator ||= Delegator.new(self)

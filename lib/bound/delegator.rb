@@ -36,6 +36,10 @@ class Bound
       register_delegation_method_called attribute_name
     end
 
+    def register_optional(attribute_name)
+      register_delegation_method_called attribute_name
+    end
+
     private
     def ensure_delegation!
       @attribute_names.each do |name|
@@ -68,6 +72,7 @@ class Bound
       @delegates.reverse.each do |delegate|
         return delegate.get_value_for(name) if delegate.can_handle? name
       end
+      nil
     end
 
     class DelegationReceiver

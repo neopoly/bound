@@ -9,7 +9,7 @@ describe Bound::FastBound do
 
   describe 'without nesting' do
     let(:bound_class) do
-      Bound::FastBound.new_child.required(:foo, :bar)
+      Bound::FastBound.new_child.required(:foo, :bar).optional(:baz)
     end
 
     describe 'and a call with a hash' do
@@ -18,6 +18,7 @@ describe Bound::FastBound do
       it 'just delegates to the keys' do
         assert_equal 1, bound.foo
         assert_equal 42, bound.bar
+        assert_equal 22, bound.baz
       end
 
       describe 'in addition to an object' do
@@ -40,6 +41,16 @@ describe Bound::FastBound do
           assert_raises Bound::MissingAttributeError do
             bound
           end
+        end
+      end
+
+      describe 'which is missing the optional value' do
+        before do
+          obj.delete(:baz)
+        end
+
+        it 'just delegates to nil' do
+          assert_nil bound.baz
         end
       end
     end

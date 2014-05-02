@@ -64,5 +64,23 @@ describe Bound::Delegator do
         assert_equal 43, wrapping_class.new.second_method
       end
     end
+
+    describe 'with optional attribute' do
+      before do
+        delegator.register_optional :opt
+        @hash = {:a_method => 42, :second_method => 11, :opt => '33'}
+      end
+
+      it 'also delegates' do
+        delegator.assign @hash
+        assert_equal '33', wrapping_class.new.opt
+      end
+
+      it 'does not raise if this value is missing on assignment' do
+        @hash.delete :opt
+        delegator.assign @hash
+        assert_nil wrapping_class.new.opt
+      end
+    end
   end
 end
