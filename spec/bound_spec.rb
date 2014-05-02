@@ -56,6 +56,7 @@ describe Bound do
   end
 
   it 'exposes an attributes method' do
+    skip
     user = User.new(hash)
 
     assert_equal 2, user.get_attributes.size
@@ -64,6 +65,9 @@ describe Bound do
   end
 
   describe 'equality' do
+    before do
+      skip
+    end
     let(:user) { User.new(hash) }
 
     it 'is given if all the attributes are same' do
@@ -147,6 +151,7 @@ describe Bound do
     end
 
     it 'are also included in attributes' do
+      skip
       user = UserWithoutAge.new(hash)
 
       assert_equal 2, user.get_attributes.size
