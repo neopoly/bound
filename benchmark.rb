@@ -25,13 +25,13 @@ providers = 10_000.times.map do |i|
   provider
 end
 
-bench 'bound w/ objt' do
+bench 'bound w/ obj' do
   providers.map do |provider|
     TestBoundary.new(provider)
   end
 end
 
-bench 'bound w/ hash' do
+bench 'bound w/ hsh' do
   providers.map do |provider|
     TestBoundary.new({
       :abc => provider.abc,
@@ -41,7 +41,7 @@ bench 'bound w/ hash' do
   end
 end
 
-bench 'plain' do
+bench 'plain assign' do
   providers.map do |provider|
     test = ManualBoundary.new
     test.abc = provider.abc
