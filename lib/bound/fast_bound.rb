@@ -22,13 +22,13 @@ class Bound
   class FastBound
     extend DSL
 
-    def initialize(delegate)
-      assign_delegate delegate
+    def initialize(*delegates)
+      assign_delegates(*delegates)
     end
 
     private
-    def assign_delegate(delegate)
-      self.class.send(:delegator).assign delegate
+    def assign_delegates(*delegates)
+      self.class.send(:delegator).assign(*delegates)
     end
   end
 

@@ -24,7 +24,10 @@ class Bound
     end
 
     def assign(*delegates)
-      @delegates = delegates
+      @delegates = delegates.map do |delegate|
+        DelegationReceiver.new delegate
+      end
+
       ensure_delegation!
     end
 
@@ -36,7 +39,7 @@ class Bound
     private
     def ensure_delegation!
       @attribute_names.each do |name|
-        unless @delegates.any? { |d| d.member? name }
+        unless @delegates.any? { |d| d.can_handle? name }
           raise MissingAttributeError.new(name)
         end
       end
@@ -63,7 +66,45 @@ class Bound
       end
 
       @delegates.reverse.each do |delegate|
-        return delegate[name] if delegate.member? name
+        return delegate.get_value_for(name) if delegate.can_handle? name
+      end
+    end
+
+    class DelegationReceiver
+      def initialize(delegate)
+        if delegate.kind_of? Hash
+          @delegate = HashDelegator.new delegate
+        else
+          @delegate = ObjectDelegator.new delegate
+        end
+      end
+
+      def can_handle?(attribute_name)
+        @delegate.can_handle? attribute_name
+      end
+
+      def get_value_for(attribute_name)
+        @delegate.get_value_for attribute_name
+      end
+
+      class HashDelegator < Struct.new(:delegate)
+        def can_handle?(attribute_name)
+          delegate.member? attribute_name
+        end
+
+        def get_value_for(attribute_name)
+          delegate[attribute_name]
+        end
+      end
+
+      class ObjectDelegator < Struct.new(:delegate)
+        def can_handle?(attribute_name)
+          delegate.respond_to? attribute_name
+        end
+
+        def get_value_for(attribute_name)
+          delegate.send attribute_name
+        end
       end
     end
   end
