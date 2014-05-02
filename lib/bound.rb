@@ -1,4 +1,5 @@
 require "bound/version"
+require 'bound/fast_bound'
 
 class Bound
   def self.new(*args)
@@ -16,6 +17,8 @@ class Bound
   private
 
   def self.new_bound_class
+    return Bound::FastBound.new_child
+
     Class.new(BoundClass) do
       initialize_values
     end
