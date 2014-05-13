@@ -1,4 +1,5 @@
 require "bound/version"
+require "bound/caller"
 
 class Bound
   def self.new(*args)
@@ -23,8 +24,6 @@ class Bound
 
   class BoundClass
     class Attribute
-      NotImplemented = Class.new(RuntimeError)
-
       attr_reader :name, :value
       attr_accessor :nested_class
 
@@ -47,12 +46,7 @@ class Bound
       end
 
       def call_on(object)
-        method = @name
-        if object.respond_to?(method)
-          object.send method
-        else
-          raise NotImplemented, "undefined method `#{method}' for #{object}"
-        end
+        Caller.call(object, @name)
       end
 
       def valid?
@@ -297,7 +291,7 @@ class Bound
         begin
           value = attribute.call_on(object)
           assign_to_receiver attribute, value
-        rescue BoundClass::Attribute::NotImplemented
+        rescue NoMethodError
           # no assignment if object hasn't desired method
           # this prevents null-assignments
         end
