@@ -149,20 +149,22 @@ class Bound
           raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
         end
 
+        attribute_class = if is_optional
+                            Attribute
+                          else
+                            RequiredAttribute
+                          end
+
         attributes.each do |attribute|
-          if is_optional
-            self.attrs[attribute] = Attribute
-          else
-            self.attrs[attribute] = RequiredAttribute
-          end
+          self.attrs[attribute] = attribute_class
         end
 
         define_attribute_accessors attributes
 
         if nested_attributes.any?
           set_attributes flag, nested_attributes.keys
-          nested_attributes.each do |attribute_name, attribute_class|
-            self.nested_attr_classes[attribute_name] = attribute_class
+          nested_attributes.each do |attribute_name, nested_class|
+            self.nested_attr_classes[attribute_name] = nested_class
           end
         end
       end
