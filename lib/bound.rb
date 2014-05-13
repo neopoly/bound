@@ -239,7 +239,7 @@ class Bound
       return false unless other
 
       get_attributes.all? do |attribute|
-        attribute.value == other.public_send(attribute.name)
+        attribute.value == Caller.call(other, attribute.name)
       end
     end
 
@@ -292,8 +292,6 @@ class Bound
           value = attribute.call_on(object)
           assign_to_receiver attribute, value
         rescue NoMethodError
-          # no assignment if object hasn't desired method
-          # this prevents null-assignments
         end
       end
     end
@@ -301,15 +299,8 @@ class Bound
     private
     def assign_to_receiver(attribute, value)
       method = "#{attribute.name}="
-      send_method @receiver, method, value
+      @receiver.send(method, value)
     end
 
-    def send_method(receiver, method, *args)
-      if receiver.respond_to?(method)
-        receiver.send method, *args
-      else
-        raise NoMethodError, "undefined method `#{method}' for #{receiver}"
-      end
-    end
   end
 end
