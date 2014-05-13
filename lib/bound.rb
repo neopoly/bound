@@ -219,20 +219,17 @@ class Bound
     end
 
     def get_attribute(attribute_name)
-      attribute_class = self.class.attrs[attribute_name]
-      nested_class = self.class.nested_attr_classes[attribute_name]
+      return @attributes[attribute_name] if @attributes.has_key? attribute_name
 
+      attribute_class = self.class.attrs[attribute_name]
       return nil if attribute_class.nil?
 
-      attribute = @attributes[attribute_name]
+      nested_class = self.class.nested_attr_classes[attribute_name]
 
-      unless attribute
-        @attributes[attribute_name] = attribute_class.new(attribute_name)
-        attribute = @attributes[attribute_name]
-        attribute.nested_class = nested_class if nested_class
-      end
+      attribute = attribute_class.new(attribute_name)
+      attribute.nested_class = nested_class
 
-      attribute
+      @attributes[attribute_name] = attribute
     end
 
     def ==(other)
