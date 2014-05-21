@@ -224,7 +224,7 @@ class Bound
       return @attributes[attribute_name] if @attributes.has_key? attribute_name
 
       attribute_class = self.class.attrs[attribute_name]
-      return nil if attribute_class.nil?
+      return nil unless attribute_class
 
       nested_class = self.class.nested_attr_classes[attribute_name]
 
