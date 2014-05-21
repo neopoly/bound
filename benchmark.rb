@@ -2,16 +2,26 @@ $: << 'lib'
 require 'bound'
 require 'benchmark/ips'
 
-TestBoundary = Bound.required(:abc, :def, :ged)
+Nested = Struct.new(:yo)
+
+TestBoundary = Bound.required(:abc, :def, :ged, :yo => Nested)
 
 ManualBoundary = Provider = Class.new do
-  attr_accessor :abc, :def, :ged
+  attr_accessor :abc, :def, :ged, :yo
 end
+
+NestedBoundary = Bound.required(:yo)
+
+nested = Nested.new
+nested.yo = 23
 
 provider = Provider.new
 provider.abc = "abc"
 provider.def = "def"
 provider.ged = "ged"
+provider.yo = nested
+
+TestBoundary.new(provider)
 
 Benchmark.ips do |x|
   x.report 'bound w/ objt' do
@@ -22,7 +32,8 @@ Benchmark.ips do |x|
     TestBoundary.new({
       :abc => provider.abc,
       :def => provider.def,
-      :ged => provider.ged
+      :ged => provider.ged,
+      :yo  => nested
     })
   end
 
@@ -31,5 +42,6 @@ Benchmark.ips do |x|
     test.abc = provider.abc
     test.def = provider.def
     test.ged = provider.ged
+    test.yo  = nested
   end
 end
