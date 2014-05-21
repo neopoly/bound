@@ -193,7 +193,7 @@ class Bound
 
     def initialize(*seeds)
       @attributes = {}
-      seeds.reverse.each do |seed|
+      seeds.reverse_each do |seed|
         seed_with seed
       end
       validate!
