@@ -7,6 +7,11 @@ TestBoundary = Bound.required(:foo, :baz => Bound.required(:gonzo))
 StructBoundary = Struct.new(:foo, :baz)
 NestedStructBoundary = Struct.new(:gonzo)
 
+def assert_correctness(bound)
+  raise('foo is wrong') unless bound.foo == 'YES'
+  raise('baz.gonzo is wrong') unless bound.baz.gonzo == 22
+end
+
 def bench(key, &block)
   result = nil
 
@@ -38,33 +43,36 @@ provider_hashes = 10_000.times.map do |i|
   }
 end
 
-
 bench '      bound w/ objt' do
-  provider_objects.map do |provider|
-    TestBoundary.new(provider)
+  provider_objects.each do |provider|
+    result = TestBoundary.new(provider)
+    assert_correctness result
   end
 end
 
 bench '      bound w/ hash' do
-  provider_hashes.map do |provider|
-    TestBoundary.new(provider)
+  provider_hashes.each do |provider|
+    result = TestBoundary.new(provider)
+    assert_correctness result
   end
 end
 
 bench 'structbound w/ objt' do
-  provider_objects.map do |provider|
-    StructBoundary.new(
-                       provider.foo,
-                       NestedStructBoundary.new(provider.gonzo)
-                      )
+  provider_objects.each do |provider|
+    result = StructBoundary.new(
+                                provider.foo,
+                                NestedStructBoundary.new(provider.baz.gonzo)
+                               )
+    assert_correctness result
   end
 end
 
 bench 'structbound w/ hash' do
   provider_hashes.map do |provider|
-    StructBoundary.new(
-                       provider[:foo],
-                       NestedStructBoundary.new(provider[:gonzo])
-                      )
+    result = StructBoundary.new(
+                                provider[:foo],
+                                NestedStructBoundary.new(provider[:baz][:gonzo])
+                               )
+    assert_correctness result
   end
 end
