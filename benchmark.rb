@@ -1,6 +1,5 @@
 $: << 'lib'
 require 'bound'
-require 'ostruct'
 require 'benchmark'
 
 TestBoundary = Bound.required(:foo, :baz => Bound.required(:gonzo))
@@ -17,11 +16,19 @@ def bench(key, &block)
   result
 end
 
+Provider = Class.new do
+  attr_accessor :foo, :baz
+  BazProvider = Class.new do
+    attr_accessor :gonzo
+  end
+end
 provider_objects = 10_000.times.map do |i|
-  OpenStruct.new(
-                 :foo => 'YES',
-                 :baz => OpenStruct.new(:gonzo => 22)
-                )
+  Provider.new.tap do |p|
+    p.foo = 'YES'
+    p.baz = Provider::BazProvider.new.tap do |bp|
+      bp.gonzo = 22
+    end
+  end
 end
 
 provider_hashes = 10_000.times.map do |i|
