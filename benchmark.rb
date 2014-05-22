@@ -108,7 +108,7 @@ provider_objects = 100_000.times.map do |i|
                brp.abc = 'FALSE'
              end
             ]
-    p.baz = Provider::BazProvider.new.tap do |bzp|
+    p.baz = BazProvider.new.tap do |bzp|
       bzp.gonzo = 22
     end
   end
