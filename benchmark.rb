@@ -19,15 +19,32 @@ StaticObjBoundary = Class.new(StaticBound) do
   end
 
   def baz
-    BazBoundary.new(@target.baz)
+    BazObjBoundary.new(@target.baz)
   end
 
-  BazBoundary = Class.new(StaticBound) do
+  BazObjBoundary = Class.new(StaticBound) do
     def gonzo
       @target.gonzo
     end
   end
 end
+
+StaticHashBoundary = Class.new(StaticBound) do
+  def foo
+    @target[:foo]
+  end
+
+  def baz
+    BazHashBoundary.new(@target[:baz])
+  end
+
+  BazHashBoundary = Class.new(StaticBound) do
+    def gonzo
+      @target[:gonzo]
+    end
+  end
+end
+
 
 def assert_correctness(bound)
   raise('foo is wrong') unless bound.foo == 'YES'
@@ -82,6 +99,13 @@ end
 bench 'staticbound w/ objt' do
   provider_objects.each do |provider|
     result = StaticObjBoundary.new(provider)
+    assert_correctness result
+  end
+end
+
+bench 'staticbound w/ hash' do
+  provider_hashes.each do |provider|
+    result = StaticHashBoundary.new(provider)
     assert_correctness result
   end
 end
