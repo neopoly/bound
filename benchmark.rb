@@ -7,6 +7,28 @@ TestBoundary = Bound.required(:foo, :baz => Bound.required(:gonzo))
 StructBoundary = Struct.new(:foo, :baz)
 NestedStructBoundary = Struct.new(:gonzo)
 
+StaticBound = Class.new do
+  def initialize(target)
+    @target = target
+  end
+end
+
+StaticObjBoundary = Class.new(StaticBound) do
+  def foo
+    @target.foo
+  end
+
+  def baz
+    BazBoundary.new(@target.baz)
+  end
+
+  BazBoundary = Class.new(StaticBound) do
+    def gonzo
+      @target.gonzo
+    end
+  end
+end
+
 def assert_correctness(bound)
   raise('foo is wrong') unless bound.foo == 'YES'
   raise('baz.gonzo is wrong') unless bound.baz.gonzo == 22
@@ -53,6 +75,13 @@ end
 bench '      bound w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider)
+    assert_correctness result
+  end
+end
+
+bench 'staticbound w/ objt' do
+  provider_objects.each do |provider|
+    result = StaticObjBoundary.new(provider)
     assert_correctness result
   end
 end
