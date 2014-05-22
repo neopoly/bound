@@ -2,6 +2,8 @@ $: << 'lib'
 require 'bound'
 require 'benchmark'
 
+#Bound.disable_validation
+
 TestBoundary = Bound.required(
                               :foo,
                               :bar => [Bound.required(:abc)],
