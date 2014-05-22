@@ -12,41 +12,59 @@ StructBoundary = Struct.new(:foo, :bar, :baz)
 BarStructBoundary = Struct.new(:abc)
 BazStructBoundary = Struct.new(:gonzo)
 
-StaticBound = Class.new do
-  def initialize(target)
-    @target = target
+StaticBoundClass = Class.new do
+  def self.define_initializer(opt = {})
+    class_eval <<-EOR
+      def initialize(target, overwrite = nil)
+        @t, @o = target, overwrite
+      end
+    EOR
   end
+
+  def self.define_delegate(attr, prefix = '')
+    class_eval <<-EOR
+      def #{prefix}#{attr}
+        return @o[:#{attr}] if @o && @o.key?(:#{attr})
+        @t.kind_of?(Hash)? @t[:#{attr}] : @t.#{attr}
+      end
+    EOR
+  end
+
+  def self.define_nested_delegate(attr, nested_class)
+    define_delegate attr, 'get_'
+    if nested_class.kind_of? Array
+      nested_class = nested_class.first
+      class_eval <<-EOR
+        def #{attr}
+          @#{attr} ||= get_#{attr}.map{|t| #{nested_class}.new t}
+        end
+        private :get_#{attr}
+      EOR
+    else
+      class_eval <<-EOR
+        def #{attr}
+          @#{attr} ||= #{nested_class}.new(get_#{attr})
+        end
+        private :get_#{attr}
+      EOR
+    end
+  end
+
+  define_initializer
 end
 
-BarStaticBoundary = Class.new(StaticBound) do
-  def abc
-    @target.kind_of?(Hash)?@target[:abc] : @target.abc
-  end
+BarStaticBoundary = Class.new(StaticBoundClass) do
+  define_delegate :abc
 end
 
-BazStaticBoundary = Class.new(StaticBound) do
-  def gonzo
-    @target.kind_of?(Hash)?@target[:gonzo] : @target.gonzo
-  end
+BazStaticBoundary = Class.new(StaticBoundClass) do
+  define_delegate :gonzo
 end
 
-StaticBoundary = Class.new(StaticBound) do
-  def foo
-    @target.kind_of?(Hash)?@target[:foo] : @target.foo
-  end
-
-  def bar
-    @bar ||=
-      (@target.kind_of?(Hash)?@target[:bar] : @target.bar).
-      map { |t| BarStaticBoundary.new(t) }
-  end
-
-  def baz
-    @baz ||=
-      BazStaticBoundary.new(
-                            (@target.kind_of?(Hash)?@target[:baz] : @target.baz)
-                           )
-  end
+StaticBoundary = Class.new(StaticBoundClass) do
+  define_delegate :foo
+  define_nested_delegate :bar, [BarStaticBoundary]
+  define_nested_delegate :baz, BazStaticBoundary
 end
 
 def assert_correctness(bound)
