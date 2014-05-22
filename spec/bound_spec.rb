@@ -15,15 +15,6 @@ describe Bound do
     end
   end
 
-  it 'checks if attribute exists' do
-    [hash, object].each do |subject|
-      user = User.new(subject)
-
-      assert user.has_attribute?(:name)
-      assert user.has_attribute?(:age)
-    end
-  end
-
   it 'fails if attribute is missing' do
     hash.delete :age
 
@@ -53,14 +44,6 @@ describe Bound do
     end
 
     assert_match(/unknown.+gender/i, exception.message)
-  end
-
-  it 'exposes an attributes method' do
-    user = User.new(hash)
-
-    assert_equal 2, user.get_attributes.size
-    assert_includes user.get_attributes.map(&:name), :name
-    assert_includes user.get_attributes.map(&:name), :age
   end
 
   describe 'equality' do
@@ -145,14 +128,6 @@ describe Bound do
         UserWithoutAge.new(subject)
       end
     end
-
-    it 'are also included in attributes' do
-      user = UserWithoutAge.new(hash)
-
-      assert_equal 2, user.get_attributes.size
-      assert_includes user.get_attributes.map(&:name), :name
-      assert_includes user.get_attributes.map(&:name), :age
-    end
   end
 
   describe 'optional nested attributes' do
@@ -182,14 +157,6 @@ describe Bound do
       [hash, object].each do |subject|
         UserWithProfile.new(subject)
       end
-    end
-
-    it 'are also included in attributes' do
-      user = UserWithProfile.new(hash)
-
-      assert_equal 2, user.get_attributes.size
-      assert_includes user.get_attributes.map(&:name), :id
-      assert_includes user.get_attributes.map(&:name), :profile
     end
   end
 
@@ -273,14 +240,6 @@ describe Bound do
       end
 
     end
-
-    it 'are also included in attributes' do
-      user = BloggingUser.new(hash)
-
-      assert_equal 2, user.get_attributes.size
-      assert_includes user.get_attributes.map(&:name), :name
-      assert_includes user.get_attributes.map(&:name), :posts
-    end
   end
 
   describe 'allows optional as constructor' do
@@ -298,20 +257,6 @@ describe Bound do
     it 'works' do
       assert_raises(ArgumentError) { Car.new }
       assert_equal "VW", Car.new(:producer => {:name => 'VW'}).producer.name
-    end
-  end
-
-  describe '__attributes__' do
-    DeprecatedUser = Bound.required(:name)
-
-    it 'is deprecated' do
-      user = DeprecatedUser.new(:name => 'foo')
-
-      deprecation_warning, _ = capture_io do
-        user.__attributes__
-      end
-
-      assert_match(/deprecated/, deprecation_warning)
     end
   end
 
