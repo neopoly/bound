@@ -191,14 +191,13 @@ class Bound
       end
     end
 
-    def initialize(*seeds)
+    def initialize(seed = nil, overwrite = nil)
       @attributes = {}
-      seeds.reverse.each do |seed|
-        seed_with seed
-      end
+      raise('Overwrite with object') if overwrite && !overwrite.kind_of?(Hash)
+      seed_with overwrite if overwrite
+      seed_with seed if seed
       validate!
     end
-
 
     def method_missing(meth, *args, &blk)
       attribute = meth.to_s.gsub(/=$/, '')

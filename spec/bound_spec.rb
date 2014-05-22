@@ -351,15 +351,12 @@ describe Bound do
 
     it 'overwrites attributes from first to last' do
       overwriting_hash = {:nose_color => 'RED'}
-      overwriting_object = HashObject.new(overwriting_hash)
 
       [hash, object].each do |subject|
-        [overwriting_hash, overwriting_object].each do |overwriting_subject|
-          user = FunnyUser.new(subject, overwriting_subject)
+        user = FunnyUser.new(subject, overwriting_hash)
 
-          assertion_description = [subject, overwriting_subject].inspect
-          assert_equal 'RED', user.nose_color, assertion_description
-        end
+        assertion_description = [subject, overwriting_hash].inspect
+        assert_equal 'RED', user.nose_color, assertion_description
       end
     end
   end
