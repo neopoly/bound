@@ -1,12 +1,12 @@
 $: << 'lib'
 require 'bound'
+require 'ostruct'
 require 'benchmark'
 
-TestBoundary = Bound.required(:abc, :def, :ged)
+TestBoundary = Bound.required(:foo, :bar, :baz => Bound.required(:gonzo))
 
-ManualBoundary = Provider = Class.new do
-  attr_accessor :abc, :def, :ged
-end
+StructBoundary = Struct.new(:foo, :bar, :baz)
+NestedStructBoundary = Struct.new(:gonzo)
 
 def bench(key, &block)
   result = nil
@@ -17,36 +17,51 @@ def bench(key, &block)
   result
 end
 
-providers = 10_000.times.map do |i|
-  provider = Provider.new
-  provider.abc = "abc#{i}"
-  provider.def = "def#{i}"
-  provider.ged = "ged#{i}"
-  provider
+provider_objects = 10_000.times.map do |i|
+  OpenStruct.new(
+                 :foo => 'YES',
+                 :bar => 'ABC',
+                 :baz => OpenStruct.new(:gonzo => 22)
+                )
 end
 
-bench 'bound w/ objt' do
-  providers.map do |provider|
+provider_hashes = 10_000.times.map do |i|
+  {
+   :foo => 'YES',
+   :bar => 'ABC',
+   :baz => {:gonzo => 22}
+  }
+end
+
+
+bench '      bound w/ objt' do
+  provider_objects.map do |provider|
     TestBoundary.new(provider)
   end
 end
 
-bench 'bound w/ hash' do
-  providers.map do |provider|
-    TestBoundary.new({
-      :abc => provider.abc,
-      :def => provider.def,
-      :ged => provider.ged
-    })
+bench '      bound w/ hash' do
+  provider_hashes.map do |provider|
+    TestBoundary.new(provider)
   end
 end
 
-bench 'plain' do
-  providers.map do |provider|
-    test = ManualBoundary.new
-    test.abc = provider.abc
-    test.def = provider.def
-    test.ged = provider.ged
-    test
+bench 'structbound w/ objt' do
+  provider_objects.map do |provider|
+    StructBoundary.new(
+                       provider.foo,
+                       provider.bar,
+                       NestedStructBoundary.new(provider.gonzo)
+                      )
+  end
+end
+
+bench 'structbound w/ hash' do
+  provider_hashes.map do |provider|
+    StructBoundary.new(
+                       provider[:foo],
+                       provider[:bar],
+                       NestedStructBoundary.new(provider[:gonzo])
+                      )
   end
 end
