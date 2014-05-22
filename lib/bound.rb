@@ -14,291 +14,294 @@ class Bound
     new_bound_class.required(*args)
   end
 
+  def self.validate?
+    !@validation_disabled
+  end
+
+  def self.disable_validation
+    @validation_disabled = true
+  end
+
   private
 
   def self.new_bound_class
-    Class.new(BoundClass) do
-      initialize_values
+    Class.new(StaticBoundClass) do
     end
   end
 
-  class BoundClass
-    class Attribute
-      attr_reader :name, :value
-      attr_accessor :nested_class
+  class BoundValidator
+    attr_accessor :attributes, :optional_attributes, :nested_array_attributes
 
-      def initialize(name)
-        @name = name
-      end
-
-      def assign(value)
-        @assigned = true
-        if nested_class
-          @value = assign_nested(value)
-        else
-          @value = value
-        end
-      end
-
-      def assign_nested(value)
-        nested_attribute = NestedAttribute.new(nested_class)
-        nested_attribute.resolve(value)
-      end
-
-      def call_on(object)
-        Caller.call(object, @name)
-      end
-
-      def valid?
-        !required? || is_assigned?
-      end
-
-      def required?
-        false
-      end
-
-      def is_assigned?
-        !!@assigned
-      end
-
-      def inspect
-        @value.inspect
-      end
+    def initialize(target, overwrite)
+      @target = target
+      @overwrite = overwrite
     end
-
-    class RequiredAttribute < Attribute
-      def required?; true; end
-    end
-
-    class NestedAttribute
-      def initialize(bound_definition)
-        if bound_definition.kind_of?(Array)
-          @assigner = ArrayAssigner.new(bound_definition)
-        else
-          @assigner = ValueAssigner.new(bound_definition)
-        end
-      end
-
-      def resolve(bound_arguments)
-        @assigner.resolve(bound_arguments)
-      end
-
-      class ArrayAssigner
-        def initialize(definitions)
-          @bound_class = definitions.first
-        end
-
-        def resolve(arguments_list)
-          raise ArgumentError.new("Expected #{arguments_list.inspect} to be an array") unless arguments_list.kind_of? Array
-          arguments_list.map do |arguments|
-            @bound_class.new(arguments)
-          end
-        end
-      end
-
-      class ValueAssigner
-        def initialize(definition)
-          @bound_class = definition
-        end
-
-        def resolve(arguments)
-          @bound_class.new(arguments)
-        end
-      end
-    end
-
-
-    class << self
-      attr_accessor :attrs, :nested_attr_classes
-
-      def initialize_values
-        self.attrs = {}
-        self.nested_attr_classes = {}
-      end
-
-      def optional(*attributes)
-        if attributes.last.kind_of? Hash
-          nested_attributes = attributes.pop
-        else
-          nested_attributes = {}
-        end
-
-        set_attributes :optional, attributes, nested_attributes
-
-        self
-      end
-
-      def required(*attributes)
-        if attributes.last.kind_of? Hash
-          nested_attributes = attributes.pop
-        else
-          nested_attributes = {}
-        end
-
-        set_attributes :required, attributes, nested_attributes
-
-        self
-      end
-
-      private
-
-      def set_attributes(flag, attributes, nested_attributes = {})
-        is_optional = flag == :optional
-
-        if attributes.any? { |a| !a.kind_of? Symbol }
-          raise ArgumentError.new("Invalid list of attributes: #{attributes.inspect}")
-        end
-
-        attribute_class = if is_optional
-                            Attribute
-                          else
-                            RequiredAttribute
-                          end
-
-        attributes.each do |attribute|
-          self.attrs[attribute] = attribute_class
-        end
-
-        define_attribute_accessors attributes
-
-        if nested_attributes.any?
-          set_attributes flag, nested_attributes.keys
-          nested_attributes.each do |attribute_name, nested_class|
-            self.nested_attr_classes[attribute_name] = nested_class
-          end
-        end
-      end
-
-      def define_attribute_accessors(attributes)
-        define_attribute_readers attributes
-        define_attribute_writers attributes
-      end
-
-      def define_attribute_readers(attributes)
-        attributes.each do |attribute|
-          define_method attribute do
-            get_attribute(attribute).value
-          end
-        end
-      end
-
-      def define_attribute_writers(attributes)
-        attributes.each do |attribute|
-          define_method :"#{attribute}=" do |value|
-            get_attribute(attribute).assign value
-          end
-        end
-      end
-    end
-
-    def initialize(seed = nil, overwrite = nil)
-      @attributes = {}
-      raise('Overwrite with object') if overwrite && !overwrite.kind_of?(Hash)
-      seed_with overwrite if overwrite
-      seed_with seed if seed
-      validate!
-    end
-
-    def method_missing(meth, *args, &blk)
-      attribute = meth.to_s.gsub(/=$/, '')
-      raise ArgumentError.new("Unknown attribute: #{self.class}##{attribute}")
-    end
-
-    def get_attributes
-      self.class.attrs.keys.map do |attribute_name|
-        get_attribute(attribute_name)
-      end
-    end
-
-    def has_attribute?(attr)
-      self.class.attrs.keys.include? attr
-    end
-
-    def __attributes__
-      puts "BoundClass#__attributes__ is deprecated: use get_attributes"
-      get_attributes.map(&:name)
-    end
-
-    def get_attribute(attribute_name)
-      return @attributes[attribute_name] if @attributes.has_key? attribute_name
-
-      attribute_class = self.class.attrs[attribute_name]
-      return nil if attribute_class.nil?
-
-      nested_class = self.class.nested_attr_classes[attribute_name]
-
-      attribute = attribute_class.new(attribute_name)
-      attribute.nested_class = nested_class
-
-      @attributes[attribute_name] = attribute
-    end
-
-    def ==(other)
-      return false unless other
-
-      get_attributes.all? do |attribute|
-        attribute.value == Caller.call(other, attribute.name)
-      end
-    end
-
-    private
 
     def validate!
-      get_attributes.each do |attribute|
-        raise ArgumentError.new("Missing attribute: #{self.class}##{attribute.name}") unless attribute.valid?
+      ensure_all_attributes_are_known!
+      attributes.each do |attribute|
+        ensure_present! attribute
       end
-    end
-
-    def seed_with(seed)
-      case seed
-      when Hash
-        seeder = HashSeeder.new(self)
-      else
-        seeder = ObjectSeeder.new(self)
-      end
-
-      seeder.seed(seed)
-    end
-  end
-
-  class HashSeeder
-    def initialize(receiver)
-      @receiver = receiver
-    end
-
-    def seed(hash)
-      hash.each do |key, value|
-        attribute = @receiver.get_attribute(key)
-        next if attribute && attribute.is_assigned?
-
-        method = "#{key}="
-        @receiver.send method, value
-      end
-    end
-  end
-
-  class ObjectSeeder
-    def initialize(receiver)
-      @receiver = receiver
-    end
-
-    def seed(object)
-      @receiver.get_attributes.each do |attribute|
-        next if attribute.is_assigned?
-
-        begin
-          value = attribute.call_on(object)
-          assign_to_receiver attribute, value
-        rescue NoMethodError
-        end
+      nested_array_attributes.each do |nested_array_attribute|
+        ensure_array! nested_array_attribute
       end
     end
 
     private
-    def assign_to_receiver(attribute, value)
-      method = "#{attribute.name}="
-      @receiver.send(method, value)
+
+    def ensure_all_attributes_are_known!
+      (overwritten_attrs + target_attrs).each do |attr|
+        unless (attributes + optional_attributes).include? attr
+          message = "Unknown attribute: #{attr}"
+          raise ArgumentError, message
+        end
+      end
     end
 
+    def ensure_present!(attribute)
+      if !overwritten?(attribute) && !target_has?(attribute)
+        message = "Missing attribute: #{attribute}"
+        raise ArgumentError, message
+      end
+    end
+
+    def ensure_array!(attribute)
+      message = "Expected %s to be an array"
+      if overwritten?(attribute)
+        unless val = overwritten(attribute).kind_of?(Array)
+          raise(ArgumentError, message % val.inspect)
+        end
+      elsif target_has?(attribute)
+        unless val = target(attribute).kind_of?(Array)
+          raise(ArgumentError, message % val.inspect)
+        end
+      else
+      end
+    end
+
+    def overwritten_attrs
+      if @overwrite
+        @overwrite.keys
+      else
+        []
+      end
+    end
+
+    def target_attrs
+      if @target && @target.kind_of?(Hash)
+        @target.keys
+      else
+        []
+      end
+    end
+
+    def overwritten?(attr)
+      @overwrite && @overwrite.key?(attr)
+    end
+
+    def overwritten(attr)
+      @overwrite && @overwrite[attr]
+    end
+
+    def target_has?(attr)
+      @target &&
+        @target.kind_of?(Hash)?@target.key?(attr):@target.respond_to?(attr)
+    end
+
+    def target(attr)
+      @target &&
+        @target.kind_of?(Hash)?@target[attr]:@target.send(attr)
+    end
   end
+
+  class StaticBoundClass
+    def ==(other)
+      false unless other
+      true
+    end
+
+    def validate!
+    end
+
+    def self.define_initializer
+      code = <<-EOR
+        def initialize(target = nil, overwrite = nil)
+          @t, @o = target, overwrite;%s
+        end
+      EOR
+      if Bound.validate?
+        code = code % ' validate!'
+      else
+        code = code % ''
+      end
+
+      class_eval code
+    end
+
+    def self.define_attributes(*attributes)
+      if attributes.last.kind_of? Hash
+        nested_attributes = attributes.pop
+      else
+        nested_attributes = {}
+      end
+
+      if nested_attributes.keys.any? { |a| !a.kind_of? Symbol }
+        message = "Invalid list of attributes: #{nested_attributes.inspect}"
+        raise ArgumentError, message
+      end
+
+      if attributes.any? { |a| !a.kind_of? Symbol }
+        message = "Invalid list of attributes: #{attributes.inspect}"
+        raise ArgumentError, message
+      end
+
+      nested_attributes.each do |attribute, nested_class|
+        define_nested_delegate attribute, nested_class
+        define_equality attribute
+      end
+
+      attributes.each do |attribute|
+        define_delegate attribute
+        define_equality attribute
+      end
+    end
+
+    def self.define_validator
+      attributes = (@attributes || []).map do |attr|
+        ":#{attr.to_s}"
+      end.join(',')
+      optional_attributes = (@optional_attributes || []).map do |attr|
+        ":#{attr.to_s}"
+      end.join(',')
+      nested_array_attributes = (@nested_array_attributes || []).map do |attr|
+        ":#{attr.to_s}"
+      end.join(',')
+      code = <<-EOR
+        def validate!
+          v = Bound::BoundValidator.new(@t, @o)
+          v.attributes = [#{attributes}]
+          v.optional_attributes = [#{optional_attributes}]
+          v.nested_array_attributes = [#{nested_array_attributes}]
+          v.validate!
+        end
+        private :validate!
+      EOR
+      class_eval code
+    end
+
+    def self.set_required_attributes(attributes, nested_array_attributes)
+      @attributes ||= []
+      @attributes += attributes
+      @attributes += nested_array_attributes
+      @nested_array_attributes ||= []
+      @nested_array_attributes += nested_array_attributes
+      define_validator
+    end
+
+    def self.set_optional_attributes(attributes, nested_array_attributes)
+      @optional_attributes ||= []
+      @optional_attributes += attributes
+      @optional_attributes += nested_array_attributes
+      @nested_array_attributes ||= []
+      @nested_array_attributes += nested_array_attributes
+      define_validator
+    end
+
+    def self.define_equality(attr)
+      @equality ||= []
+      @equality << attr
+      code = <<-EOR
+        def==(other)
+          return false unless other
+          %w{#{@equality.join(' ')}}.all? do |attr|
+            other.respond_to?(attr) &&
+              other.send(attr) == send(attr)
+          end
+        end
+      EOR
+      class_eval code
+    end
+
+    def self.define_delegate(attr, prefix = '')
+      code = <<-EOR
+        def #{prefix}#{attr}
+          return @o[:#{attr}] if @o && @o.key?(:#{attr})
+          return @t.kind_of?(Hash)? @t[:#{attr}] : @t.#{attr} if @t
+          nil
+        end
+      EOR
+      class_eval code
+    end
+
+    def self.define_nested_delegate(attr, nested_class)
+      define_delegate attr, 'get_'
+      code = <<-EOR
+        class << self
+          def get_#{attr}_class
+            @#{attr}_class
+          end
+          def set_#{attr}_class(arg)
+            @#{attr}_class = arg
+          end
+          private :set_#{attr}_class
+        end
+      EOR
+
+      if nested_class.kind_of? Array
+        nested_class = nested_class.first
+        code += <<-EOR
+          def #{attr}
+            return @#{attr} if defined? @#{attr}
+            return [] unless val = get_#{attr}
+            @#{attr} ||= val.map{|t| self.class.get_#{attr}_class.new t}
+          end
+          private :get_#{attr}
+        EOR
+      else
+        code += <<-EOR
+          def #{attr}
+            return @#{attr} if defined? @#{attr}
+            return nil unless val = get_#{attr}
+            @#{attr} ||= self.class.get_#{attr}_class.new(val)
+          end
+          private :get_#{attr}
+        EOR
+      end
+      class_eval code
+      self.send :"set_#{attr}_class", nested_class
+    end
+
+    def self.required(*attributes)
+      self.define_attributes(*attributes)
+
+      array_attributes = []
+      if attributes.last.kind_of? Hash
+        attributes.pop.each do |attr, nested_class|
+          array_attributes << attr if nested_class.kind_of? Array
+          attributes << attr
+        end
+      end
+
+      self.set_required_attributes(attributes, array_attributes)
+      self
+    end
+
+    def self.optional(*attributes)
+      self.define_attributes(*attributes)
+
+      array_attributes = []
+      if attributes.last.kind_of? Hash
+        attributes.pop.each do |attr, nested_class|
+          array_attributes << attr if nested_class.kind_of? Array
+          attributes << attr
+        end
+      end
+
+      self.set_optional_attributes(attributes, array_attributes)
+      self
+    end
+
+    define_initializer
+  end
+
 end
