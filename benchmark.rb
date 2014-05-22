@@ -68,7 +68,7 @@ StaticBoundary = Class.new(StaticBoundClass) do
 end
 
 def assert_correctness(bound)
-  raise('foo is wrong') unless bound.foo == 'YES'
+  raise('foo is wrong') unless bound.foo == 'NOPE'
   raise('bar size is wrong') unless bound.bar.size == 2
   raise('bar[0] is wrong') unless bound.bar[0].abc == 'TRUE'
   raise('bar[1] is wrong') unless bound.bar[1].abc == 'FALSE'
@@ -118,30 +118,32 @@ provider_hashes = 10_000.times.map do |i|
   }
 end
 
+overwrite = {:foo => 'NOPE'}
+
 bench '      bound w/ objt' do
   provider_objects.each do |provider|
-    result = TestBoundary.new(provider)
+    result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
 
 bench '      bound w/ hash' do
   provider_hashes.each do |provider|
-    result = TestBoundary.new(provider)
+    result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
 
 bench 'staticbound w/ objt' do
   provider_objects.each do |provider|
-    result = StaticBoundary.new(provider)
+    result = StaticBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
 
 bench 'staticbound w/ hash' do
   provider_hashes.each do |provider|
-    result = StaticBoundary.new(provider)
+    result = StaticBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
@@ -149,7 +151,7 @@ end
 bench 'structbound w/ objt' do
   provider_objects.each do |provider|
     result = StructBoundary.new(
-                                provider.foo,
+                                overwrite[:foo],
                                 [
                                  BarStructBoundary.new(provider.bar[0].abc),
                                  BarStructBoundary.new(provider.bar[1].abc),
@@ -163,7 +165,7 @@ end
 bench 'structbound w/ hash' do
   provider_hashes.map do |provider|
     result = StructBoundary.new(
-                                provider[:foo],
+                                overwrite[:foo],
                                 [
                                  BarStructBoundary.new(provider[:bar][0][:abc]),
                                  BarStructBoundary.new(provider[:bar][1][:abc]),
