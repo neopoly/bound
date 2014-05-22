@@ -13,7 +13,7 @@ BarStructBoundary = Struct.new(:abc)
 BazStructBoundary = Struct.new(:gonzo)
 
 StaticBoundClass = Class.new do
-  def self.define_initializer(opt = {})
+  def self.initialize_unvalidated
     class_eval <<-EOR
       def initialize(target, overwrite = nil)
         @t, @o = target, overwrite
@@ -49,19 +49,23 @@ StaticBoundClass = Class.new do
       EOR
     end
   end
-
-  define_initializer
 end
 
 BarStaticBoundary = Class.new(StaticBoundClass) do
+  initialize_unvalidated
+
   define_delegate :abc
 end
 
 BazStaticBoundary = Class.new(StaticBoundClass) do
+  initialize_unvalidated
+
   define_delegate :gonzo
 end
 
 StaticBoundary = Class.new(StaticBoundClass) do
+  initialize_unvalidated
+
   define_delegate :foo
   define_nested_delegate :bar, [BarStaticBoundary]
   define_nested_delegate :baz, BazStaticBoundary
