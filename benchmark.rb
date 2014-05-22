@@ -3,9 +3,9 @@ require 'bound'
 require 'ostruct'
 require 'benchmark'
 
-TestBoundary = Bound.required(:foo, :bar, :baz => Bound.required(:gonzo))
+TestBoundary = Bound.required(:foo, :baz => Bound.required(:gonzo))
 
-StructBoundary = Struct.new(:foo, :bar, :baz)
+StructBoundary = Struct.new(:foo, :baz)
 NestedStructBoundary = Struct.new(:gonzo)
 
 def bench(key, &block)
@@ -20,7 +20,6 @@ end
 provider_objects = 10_000.times.map do |i|
   OpenStruct.new(
                  :foo => 'YES',
-                 :bar => 'ABC',
                  :baz => OpenStruct.new(:gonzo => 22)
                 )
 end
@@ -28,7 +27,6 @@ end
 provider_hashes = 10_000.times.map do |i|
   {
    :foo => 'YES',
-   :bar => 'ABC',
    :baz => {:gonzo => 22}
   }
 end
@@ -50,7 +48,6 @@ bench 'structbound w/ objt' do
   provider_objects.map do |provider|
     StructBoundary.new(
                        provider.foo,
-                       provider.bar,
                        NestedStructBoundary.new(provider.gonzo)
                       )
   end
@@ -60,7 +57,6 @@ bench 'structbound w/ hash' do
   provider_hashes.map do |provider|
     StructBoundary.new(
                        provider[:foo],
-                       provider[:bar],
                        NestedStructBoundary.new(provider[:gonzo])
                       )
   end
