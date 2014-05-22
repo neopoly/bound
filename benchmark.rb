@@ -19,7 +19,7 @@ StaticObjBoundary = Class.new(StaticBound) do
   end
 
   def baz
-    BazObjBoundary.new(@target.baz)
+    @baz ||= BazObjBoundary.new(@target.baz)
   end
 
   BazObjBoundary = Class.new(StaticBound) do
@@ -35,7 +35,7 @@ StaticHashBoundary = Class.new(StaticBound) do
   end
 
   def baz
-    BazHashBoundary.new(@target[:baz])
+    @baz ||= BazHashBoundary.new(@target[:baz])
   end
 
   BazHashBoundary = Class.new(StaticBound) do
