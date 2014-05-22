@@ -97,7 +97,7 @@ Provider = Class.new do
     attr_accessor :gonzo
   end
 end
-provider_objects = 10_000.times.map do |i|
+provider_objects = 100_000.times.map do |i|
   Provider.new.tap do |p|
     p.foo = 'YES'
     p.bar = [
@@ -114,7 +114,7 @@ provider_objects = 10_000.times.map do |i|
   end
 end
 
-provider_hashes = 10_000.times.map do |i|
+provider_hashes = 100_000.times.map do |i|
   {
    :foo => 'YES',
    :bar => [{:abc => 'TRUE'}, {:abc => 'FALSE'}],
