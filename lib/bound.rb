@@ -20,6 +20,7 @@ class Bound
 
   def self.disable_validation
     @validation_disabled = true
+    StaticBoundClass.define_initializer_without_validation
   end
 
   private
@@ -123,14 +124,19 @@ class Bound
     def validate!
     end
 
-    def self.define_initializer
+    def self.define_initializer_without_validation
+      define_initializer(nil)
+    end
+
+    def self.define_initializer(after_init = 'validate!')
       code = <<-EOR
         def initialize(target = nil, overwrite = nil)
-          @t, @o = target, overwrite;%s
+          @t, @o = target, overwrite
+          %s
         end
       EOR
-      if Bound.validate?
-        code = code % ' validate!'
+      if after_init
+        code = code % " #{after_init}"
       else
         code = code % ''
       end
