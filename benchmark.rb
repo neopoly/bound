@@ -1,6 +1,7 @@
 $: << 'lib'
 require 'bound'
 require 'benchmark'
+require 'perftools'
 
 #Bound.disable_validation
 
@@ -126,19 +127,23 @@ end
 
 overwrite = {:foo => 'NOPE'}
 
+PerfTools::CpuProfiler.start("bound.objt")
 bench '      bound w/ objt' do
   provider_objects.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
+PerfTools::CpuProfiler.stop
 
+PerfTools::CpuProfiler.start("bound.hash")
 bench '      bound w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
+PerfTools::CpuProfiler.stop
 
 bench 'staticbound w/ objt' do
   provider_objects.each do |provider|
