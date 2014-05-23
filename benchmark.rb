@@ -1,9 +1,22 @@
 $: << 'lib'
 require 'bound'
 require 'benchmark'
-require 'perftools'
 
-#Bound.disable_validation
+require 'perftools'
+def start_perf(name)
+  @_perf_name_ = 'prof__' + name
+  PerfTools::CpuProfiler.start @_perf_name_
+end
+
+def finish_perf
+  PerfTools::CpuProfiler.stop
+  system "pprof.rb --pdf #@_perf_name_ > #{@_perf_name_}.pdf"
+  system "rm -f ./#{@_perf_name_} ./#{@_perf_name_}.symbols"
+ensure
+  @_perf_name_ = nil
+end
+
+
 
 TestBoundary = Bound.required(
                               :foo,
@@ -127,23 +140,44 @@ end
 
 overwrite = {:foo => 'NOPE'}
 
-PerfTools::CpuProfiler.start("bound.objt")
+
+start_perf 'bound.objt'
 bench '      bound w/ objt' do
   provider_objects.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-PerfTools::CpuProfiler.stop
+finish_perf
 
-PerfTools::CpuProfiler.start("bound.hash")
+start_perf 'bound.hash'
 bench '      bound w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-PerfTools::CpuProfiler.stop
+finish_perf
+
+Bound.disable_validation
+
+start_perf 'bound.noval.objt'
+bench '      bound w/ objt' do
+  provider_objects.each do |provider|
+    result = TestBoundary.new(provider, overwrite)
+    assert_correctness result
+  end
+end
+finish_perf
+
+start_perf 'bound.noval.hash'
+bench '      bound w/ hash' do
+  provider_hashes.each do |provider|
+    result = TestBoundary.new(provider, overwrite)
+    assert_correctness result
+  end
+end
+finish_perf
 
 bench 'staticbound w/ objt' do
   provider_objects.each do |provider|
