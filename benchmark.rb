@@ -167,7 +167,7 @@ finish_perf
 Bound.disable_validation
 
 start_perf 'bound.noval.objt'
-bench '      bound w/ objt' do
+bench 'bound noval w/ objt' do
   provider_objects.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
@@ -176,7 +176,7 @@ end
 finish_perf
 
 start_perf 'bound.noval.hash'
-bench '      bound w/ hash' do
+bench 'bound noval w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
