@@ -2,18 +2,23 @@ $: << 'lib'
 require 'bound'
 require 'benchmark'
 
-require 'perftools'
-def start_perf(name)
-  @_perf_name_ = 'prof__' + name
-  PerfTools::CpuProfiler.start @_perf_name_
-end
+if ENV['PROFILE']
+  require 'perftools'
+  def start_perf(name)
+    @_perf_name_ = 'prof__' + name
+    PerfTools::CpuProfiler.start @_perf_name_
+  end
 
-def finish_perf
-  PerfTools::CpuProfiler.stop
-  system "pprof.rb --pdf #@_perf_name_ > #{@_perf_name_}.pdf"
-  system "rm -f ./#{@_perf_name_} ./#{@_perf_name_}.symbols"
-ensure
-  @_perf_name_ = nil
+  def finish_perf
+    PerfTools::CpuProfiler.stop
+    system "pprof.rb --pdf #@_perf_name_ > #{@_perf_name_}.pdf"
+    system "rm -f ./#{@_perf_name_} ./#{@_perf_name_}.symbols"
+  ensure
+    @_perf_name_ = nil
+  end
+else
+  def start_perf(*);end
+  def finish_perf(*);end
 end
 
 
