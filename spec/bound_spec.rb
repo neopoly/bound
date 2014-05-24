@@ -15,6 +15,16 @@ describe Bound do
     end
   end
 
+  it 'does not cache the set attributes' do
+    user = User.new(hash)
+    hash[:name] = 'AAA'
+    assert_equal 'AAA', user.name
+
+    user = User.new(object)
+    object.name = 'AAA'
+    assert_equal 'AAA', user.name
+  end
+
   it 'fails if attribute is missing' do
     hash.delete :age
 
@@ -209,6 +219,16 @@ describe Bound do
         assert_match(/missing/i, error.message)
       end
     end
+
+    it 'does not cache values in the nested bound' do
+      user = EmployedUser.new(hash)
+      hash[:company][:name] = 'AAA'
+      assert_equal 'AAA', user.company.name
+
+      user = EmployedUser.new(object)
+      object.company.name = 'AAA'
+      assert_equal 'AAA', user.company.name
+    end
   end
 
   describe 'array of nested attribute' do
@@ -242,6 +262,16 @@ describe Bound do
         end
         assert_match(/missing/i, error.message)
       end
+    end
+
+    it 'does not cache values in the array' do
+      user = BloggingUser.new(hash)
+      hash[:posts][0][:title] = 'AAA'
+      assert_equal 'AAA', user.posts[0].title
+
+      user = BloggingUser.new(object)
+      object.posts[0].title = 'AAA'
+      assert_equal 'AAA', user.posts[0].title
     end
 
     describe 'equality' do
