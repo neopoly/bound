@@ -158,6 +158,16 @@ describe Bound do
         UserWithProfile.new(subject)
       end
     end
+
+    it 'fails if argument of optional nested bound is missing' do
+      hash[:profile].delete(:age)
+      [hash, object].each do |subject|
+        error = assert_raises ArgumentError do
+          UserWithProfile.new(subject)
+        end
+        assert_match(/missing/i, error.message)
+      end
+    end
   end
 
   describe 'no attributes' do
@@ -189,6 +199,16 @@ describe Bound do
         assert_equal hash[:company][:address][:street], user.company.address.street
       end
     end
+
+    it 'fails if nested attributes are missing' do
+      hash[:company].delete(:name)
+      [hash, object].each do |subject|
+        error = assert_raises ArgumentError do
+          user = EmployedUser.new(subject)
+        end
+        assert_match(/missing/i, error.message)
+      end
+    end
   end
 
   describe 'array of nested attribute' do
@@ -211,6 +231,16 @@ describe Bound do
         assert_equal hash[:name],             user.name
         assert_equal hash[:posts][0][:title], user.posts[0].title
         assert_equal hash[:posts][1][:title], user.posts[1].title
+      end
+    end
+
+    it 'fails if nested bound is missing an attribute' do
+      hash[:posts][1].delete(:title)
+      [hash, object].each do |subject|
+        error = assert_raises ArgumentError do
+          BloggingUser.new(subject)
+        end
+        assert_match(/missing/i, error.message)
       end
     end
 

@@ -33,24 +33,26 @@ class Bound
   class BoundValidator
     attr_accessor :attributes, :optional_attributes, :nested_array_attributes
 
-    def initialize(target, overwrite)
+    def initialize(bound, target, overwrite)
+      @bound = bound
       @target = target
       @overwrite = overwrite
     end
 
     def validate!
-      ensure_all_attributes_are_known!
+      ensure_all_given_attributes_are_known!
       attributes.each do |attribute|
         ensure_present! attribute
       end
       nested_array_attributes.each do |nested_array_attribute|
         ensure_array! nested_array_attribute
       end
+      ensure_all_attributes_are_callable!
     end
 
     private
 
-    def ensure_all_attributes_are_known!
+    def ensure_all_given_attributes_are_known!
       (overwritten_attrs + target_attrs).each do |attr|
         unless (attributes + optional_attributes).include? attr
           a = (attributes + optional_attributes).inspect
@@ -80,6 +82,16 @@ class Bound
       else
       end
     end
+
+    def ensure_all_attributes_are_callable!
+      attributes.each do |attr|
+        @bound.send attr
+      end
+      optional_attributes.each do |attr|
+        @bound.send attr if set? attr
+      end
+    end
+
 
     def overwritten_attrs
       if @overwrite
@@ -113,6 +125,10 @@ class Bound
     def target(attr)
       @target &&
         @target.kind_of?(Hash)?@target[attr]:@target.send(attr)
+    end
+
+    def set?(attr)
+      target_has?(attr) || overwritten?(attr)
     end
   end
 
@@ -185,7 +201,7 @@ class Bound
       end.join(',')
       code = <<-EOR
         def validate!
-          v = Bound::BoundValidator.new(@t, @o)
+          v = Bound::BoundValidator.new(self, @t, @o)
           v.attributes = [#{attributes}]
           v.optional_attributes = [#{optional_attributes}]
           v.nested_array_attributes = [#{nested_array_attributes}]
