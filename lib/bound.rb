@@ -152,13 +152,8 @@ class Bound
           %s
         end
       EOR
-      if after_init
-        code = code % " #{after_init}"
-      else
-        code = code % ''
-      end
 
-      class_eval code
+      class_eval code % after_init
     end
 
     def self.define_attributes(*attributes)
@@ -190,15 +185,10 @@ class Bound
     end
 
     def self.define_validator
-      attributes = (@attributes || []).map do |attr|
-        ":#{attr.to_s}"
-      end.join(',')
-      optional_attributes = (@optional_attributes || []).map do |attr|
-        ":#{attr.to_s}"
-      end.join(',')
-      nested_array_attributes = (@nested_array_attributes || []).map do |attr|
-        ":#{attr.to_s}"
-      end.join(',')
+      attributes = symbolize_attributes(@attributes)
+      optional_attributes = symbolize_attributes(@optional_attributes)
+      nested_array_attributes = symbolize_attributes(@nested_array_attributes)
+
       code = <<-EOR
         def validate!
           v = Bound::BoundValidator.new(self, @t, @o)
@@ -210,6 +200,10 @@ class Bound
         private :validate!
       EOR
       class_eval code
+    end
+
+    def self.symbolize_attributes(attributes)
+      (attributes || []).map { |attr| ":#{attr}" }.join(", ")
     end
 
     def self.set_required_attributes(attributes, nested_array_attributes)
@@ -234,9 +228,9 @@ class Bound
       @equality ||= []
       @equality << attr
       code = <<-EOR
-        def==(other)
+        def ==(other)
           return false unless other
-          %w{#{@equality.join(' ')}}.all? do |attr|
+          #{@equality.inspect}.all? do |attr|
             other.respond_to?(attr) &&
               other.send(attr) == send(attr)
           end
@@ -249,7 +243,7 @@ class Bound
       code = <<-EOR
         def #{prefix}#{attr}
           return @o[:#{attr}] if @o && @o.key?(:#{attr})
-          return @t.kind_of?(Hash)? @t[:#{attr}] : @t.#{attr} if @t
+          return @t.kind_of?(Hash) ? @t[:#{attr}] : @t.#{attr} if @t
           nil
         end
       EOR
