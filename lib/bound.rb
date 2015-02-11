@@ -202,19 +202,19 @@ class Bound
 
     def self.set_required_attributes(attributes, nested_array_attributes)
       @attributes ||= []
-      @attributes += attributes
-      @attributes += nested_array_attributes
+      @attributes.concat attributes
+      @attributes.concat nested_array_attributes
       @nested_array_attributes ||= []
-      @nested_array_attributes += nested_array_attributes
+      @nested_array_attributes.concat nested_array_attributes
       define_validator
     end
 
     def self.set_optional_attributes(attributes, nested_array_attributes)
       @optional_attributes ||= []
-      @optional_attributes += attributes
-      @optional_attributes += nested_array_attributes
+      @optional_attributes.concat attributes
+      @optional_attributes.concat nested_array_attributes
       @nested_array_attributes ||= []
-      @nested_array_attributes += nested_array_attributes
+      @nested_array_attributes.concat nested_array_attributes
       define_validator
     end
 
