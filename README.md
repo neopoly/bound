@@ -1,6 +1,21 @@
+[github]: https://github.com/neopoly/bound
+[doc]: http://rubydoc.info/github/neopoly/bound/master/file/README.md
+[gem]: https://rubygems.org/gems/bound
+[travis]: https://travis-ci.org/neopoly/bound
+[codeclimate]: https://codeclimate.com/github/neopoly/bound
+[inchpages]: https://inch-ci.org/github/neopoly/bound
+
 # Bound
 
-[![Build Status](https://travis-ci.org/neopoly/bound.png)](https://travis-ci.org/neopoly/bound) [![Gem Version](https://badge.fury.io/rb/bound.png)](http://badge.fury.io/rb/bound) [![Code Climate](https://codeclimate.com/github/neopoly/bound.png)](https://codeclimate.com/github/neopoly/bound)
+[![Travis](https://img.shields.io/travis/neopoly/bound.svg?branch=master)][travis]
+[![Gem Version](https://img.shields.io/gem/v/bound.svg)][gem]
+[![Code Climate](https://img.shields.io/codeclimate/github/neopoly/bound.svg)][codeclimate]
+[![Test Coverage](https://codeclimate.com/github/neopoly/bound/badges/coverage.svg)][codeclimate]
+[![Inline docs](https://inch-ci.org/github/neopoly/bound.svg?branch=master&style=flat)][inchpages]
+
+[Gem][gem] |
+[Source][github] |
+[Documentation][doc]
 
 **In short:** The mission: Bring the notion of interfaces to ruby.
 
