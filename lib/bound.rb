@@ -295,21 +295,14 @@ class Bound
     end
 
     def self.required(*attributes)
-      self.define_attributes(*attributes)
-
-      array_attributes = []
-      if attributes.last.kind_of? Hash
-        attributes.pop.each do |attr, nested_class|
-          array_attributes << attr if nested_class.kind_of? Array
-          attributes << attr
-        end
-      end
-
-      self.set_required_attributes(attributes, array_attributes)
-      self
+      set_attributes(:set_required_attributes, attributes)
     end
 
     def self.optional(*attributes)
+      set_attributes(:set_optional_attributes, attributes)
+    end
+
+    def self.set_attributes(type, attributes)
       self.define_attributes(*attributes)
 
       array_attributes = []
@@ -320,7 +313,7 @@ class Bound
         end
       end
 
-      self.set_optional_attributes(attributes, array_attributes)
+      self.send(type, attributes, array_attributes)
       self
     end
 
