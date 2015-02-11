@@ -53,10 +53,11 @@ class Bound
     private
 
     def ensure_all_given_attributes_are_known!
-      (overwritten_attrs + target_attrs).each do |attr|
-        unless (attributes + optional_attributes).include? attr
-          a = (attributes + optional_attributes).inspect
-          message = "Unknown attribute: #{attr.inspect} in #{a}"
+      a = overwritten_attrs + target_attrs
+      b = attributes + optional_attributes
+      a.each do |attr|
+        unless b.include? attr
+          message = "Unknown attribute: #{attr.inspect} in #{b}"
           raise ArgumentError, message
         end
       end
@@ -91,7 +92,6 @@ class Bound
         @bound.send attr if set? attr
       end
     end
-
 
     def overwritten_attrs
       if @overwrite
