@@ -35,8 +35,8 @@ class Bound
 
     def initialize(bound, target, overwrite)
       @bound = bound
-      @target = target
-      @overwrite = overwrite
+      @target = target || {}
+      @overwrite = overwrite || {}
     end
 
     def validate!
@@ -94,15 +94,11 @@ class Bound
     end
 
     def overwritten_attrs
-      if @overwrite
-        @overwrite.keys
-      else
-        []
-      end
+      @overwrite.keys
     end
 
     def target_attrs
-      if @target && @target.kind_of?(Hash)
+      if @target.kind_of?(Hash)
         @target.keys
       else
         []
@@ -110,21 +106,19 @@ class Bound
     end
 
     def overwritten?(attr)
-      @overwrite && @overwrite.key?(attr)
+      @overwrite.key?(attr)
     end
 
     def overwritten(attr)
-      @overwrite && @overwrite[attr]
+      @overwrite[attr]
     end
 
     def target_has?(attr)
-      @target &&
-        @target.kind_of?(Hash)?@target.key?(attr):@target.respond_to?(attr)
+      @target.kind_of?(Hash) ? @target.key?(attr) : @target.respond_to?(attr)
     end
 
     def target(attr)
-      @target &&
-        @target.kind_of?(Hash)?@target[attr]:@target.send(attr)
+      @target.kind_of?(Hash) ? @target[attr] : @target.send(attr)
     end
 
     def set?(attr)
