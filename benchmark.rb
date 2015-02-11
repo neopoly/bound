@@ -2,27 +2,6 @@ $: << 'lib'
 require 'bound'
 require 'benchmark'
 
-if ENV['PROFILE']
-  require 'perftools'
-  def start_perf(name)
-    @_perf_name_ = 'prof__' + name
-    PerfTools::CpuProfiler.start @_perf_name_
-  end
-
-  def finish_perf
-    PerfTools::CpuProfiler.stop
-    system "pprof.rb --pdf #@_perf_name_ > #{@_perf_name_}.pdf"
-    system "rm -f ./#{@_perf_name_} ./#{@_perf_name_}.symbols"
-  ensure
-    @_perf_name_ = nil
-  end
-else
-  def start_perf(*);end
-  def finish_perf(*);end
-end
-
-
-
 TestBoundary = Bound.required(
                               :foo,
                               :bar => [Bound.required(:abc)],
@@ -101,12 +80,23 @@ def assert_correctness(bound)
 end
 
 def bench(key, &block)
-  result = nil
+  profiled do
+    result = nil
 
-  time = Benchmark.realtime { result = block.call }
-  puts "Benchmarking '#{key}' --> #{time}ms"
+    time = Benchmark.realtime { result = block.call }
+    puts "Benchmarking '#{key}' --> #{time}ms"
 
-  result
+    result
+  end
+end
+
+def profiled
+  if ENV['PROFILE']
+    require 'hotch'
+    Hotch { yield }
+  else
+    yield
+  end
 end
 
 Provider = Class.new do
@@ -145,44 +135,35 @@ end
 
 overwrite = {:foo => 'NOPE'}
 
-
-start_perf 'bound.objt'
 bench '      bound w/ objt' do
   provider_objects.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-finish_perf
 
-start_perf 'bound.hash'
 bench '      bound w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-finish_perf
 
 Bound.disable_validation
 
-start_perf 'bound.noval.objt'
 bench 'bound noval w/ objt' do
   provider_objects.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-finish_perf
 
-start_perf 'bound.noval.hash'
 bench 'bound noval w/ hash' do
   provider_hashes.each do |provider|
     result = TestBoundary.new(provider, overwrite)
     assert_correctness result
   end
 end
-finish_perf
 
 bench 'staticbound w/ objt' do
   provider_objects.each do |provider|
