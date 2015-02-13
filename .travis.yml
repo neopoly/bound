@@ -15,6 +15,7 @@ env:
     - CODECLIMATE_REPO_TOKEN=d4c34cd6f4f50eb092a1f01e1b7e24acb0b9c59b266dfc91bcd26df15a48b8f5
     - JRUBY_OPTS='--dev -J-Xmx1024M'
 matrix:
+  fast_finish: true
   allow_failures:
     - rvm: ruby-head
     - rvm: jruby-head
