@@ -1,17 +1,22 @@
 [github]: https://github.com/neopoly/bound
 [doc]: http://rubydoc.info/github/neopoly/bound/master/file/README.md
 [gem]: https://rubygems.org/gems/bound
+[gem-badge]:https://img.shields.io/gem/v/bound.svg
 [travis]: https://travis-ci.org/neopoly/bound
+[travis-badge]: https://img.shields.io/travis/neopoly/bound.svg?branch=master
 [codeclimate]: https://codeclimate.com/github/neopoly/bound
+[codeclimate-climate-badge]: https://img.shields.io/codeclimate/github/neopoly/bound.svg
+[codeclimate-coverage-badge]: https://codeclimate.com/github/neopoly/bound/badges/coverage.svg
 [inchpages]: https://inch-ci.org/github/neopoly/bound
+[inchpages-badge]:https://inch-ci.org/github/neopoly/bound.svg?branch=master&style=flat
 
 # Bound
 
-[![Travis](https://img.shields.io/travis/neopoly/bound.svg?branch=master)][travis]
-[![Gem Version](https://img.shields.io/gem/v/bound.svg)][gem]
-[![Code Climate](https://img.shields.io/codeclimate/github/neopoly/bound.svg)][codeclimate]
-[![Test Coverage](https://codeclimate.com/github/neopoly/bound/badges/coverage.svg)][codeclimate]
-[![Inline docs](https://inch-ci.org/github/neopoly/bound.svg?branch=master&style=flat)][inchpages]
+[![Travis][travis-badge]][travis]
+[![Gem Version][gem-badge]][gem]
+[![Code Climate][codeclimate-climate-badge]][codeclimate]
+[![Test Coverage][codeclimate-coverage-badge]][codeclimate]
+[![Inline docs][inchpages-badge]][inchpages]
 
 [Gem][gem] |
 [Source][github] |
