@@ -3,8 +3,8 @@ require 'spec_helper'
 # Test support object
 describe HashObject do
 
-  subject { HashObject.new(hash) }
-  let(:hash) do
+  subject { HashObject.new(the_hash) }
+  let(:the_hash) do
     {
       :name => 'Steve',
       :address => {:street => 'Mainstreet'},
@@ -17,11 +17,11 @@ describe HashObject do
   end
 
   it 'maps an intergalactic hash' do
-    assert_equal hash[:name],             subject.name
-    assert_equal hash[:address][:street], subject.address.street
-    assert_equal hash[:posts].size,       subject.posts.size
-    assert_equal hash[:posts][0][:title], subject.posts[0].title
-    assert_equal hash[:posts][1][:title], subject.posts[1].title
-    assert_equal hash[:living?],          subject.living?
+    assert_equal the_hash[:name],             subject.name
+    assert_equal the_hash[:address][:street], subject.address.street
+    assert_equal the_hash[:posts].size,       subject.posts.size
+    assert_equal the_hash[:posts][0][:title], subject.posts[0].title
+    assert_equal the_hash[:posts][1][:title], subject.posts[1].title
+    assert_equal the_hash[:living?],          subject.living?
   end
 end

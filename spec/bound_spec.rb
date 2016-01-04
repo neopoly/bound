@@ -3,21 +3,21 @@ require 'spec_helper'
 describe Bound do
   User = Bound.required(:name, :age)
 
-  let(:object)  { HashObject.new(hash) }
-  let(:hash)    { {:name => 'foo', :age => 23} }
+  let(:object)  { HashObject.new(the_hash) }
+  let(:the_hash)    { {:name => 'foo', :age => 23} }
 
   it 'sets all attributes' do
-    [hash, object].each do |subject|
+    [the_hash, object].each do |subject|
       user = User.new(subject)
 
-      assert_equal hash[:name], user.name
-      assert_equal hash[:age], user.age
+      assert_equal the_hash[:name], user.name
+      assert_equal the_hash[:age], user.age
     end
   end
 
   it 'does not cache the set attributes' do
-    user = User.new(hash)
-    hash[:name] = 'AAA'
+    user = User.new(the_hash)
+    the_hash[:name] = 'AAA'
     assert_equal 'AAA', user.name
 
     user = User.new(object)
@@ -26,9 +26,9 @@ describe Bound do
   end
 
   it 'fails if attribute is missing' do
-    hash.delete :age
+    the_hash.delete :age
 
-    [hash, object].each do |subject|
+    [the_hash, object].each do |subject|
       exception = assert_raises ArgumentError, subject.inspect do
         User.new(subject)
       end
@@ -38,16 +38,16 @@ describe Bound do
   end
 
   it 'works if attribute is nil' do
-    hash[:age] = nil
+    the_hash[:age] = nil
 
-    [hash, object].each do |subject|
+    [the_hash, object].each do |subject|
       User.new(subject)
     end
   end
 
   it 'fails if attribute is unknown' do
-    hash[:gender] = "M"
-    subject = hash
+    the_hash[:gender] = "M"
+    subject = the_hash
 
     exception = assert_raises ArgumentError, subject.inspect do
       User.new(subject)
@@ -57,16 +57,16 @@ describe Bound do
   end
 
   describe 'equality' do
-    let(:user) { User.new(hash) }
+    let(:user) { User.new(the_hash) }
 
     it 'is given if all the attributes are same' do
-      reference_user = User.new(hash)
+      reference_user = User.new(the_hash)
 
       assert_equal user, reference_user
     end
 
     it 'is not given if attributes differ' do
-      reference_user = User.new(hash.merge(:name => 'DIFF'))
+      reference_user = User.new(the_hash.merge(:name => 'DIFF'))
 
       refute_equal user, reference_user
     end
@@ -98,7 +98,7 @@ describe Bound do
 
   describe 'inspect' do
     let(:inspection) { user.inspect }
-    let(:user) { User.new(hash) }
+    let(:user) { User.new(the_hash) }
 
     it 'lists all attributes' do
       assert_match(/name=>"foo"/, inspection)
@@ -116,25 +116,25 @@ describe Bound do
     UserWithoutAge = Bound.required(:name).optional(:age)
 
     it 'sets optional attributes' do
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = UserWithoutAge.new(subject)
 
-        assert_equal hash[:age], user.age
+        assert_equal the_hash[:age], user.age
       end
     end
 
     it 'works if optional attribute is missing' do
-      hash.delete :age
+      the_hash.delete :age
 
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         UserWithoutAge.new(subject)
       end
     end
 
     it 'works if attribute is nil' do
-      hash[:age] = nil
+      the_hash[:age] = nil
 
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         UserWithoutAge.new(subject)
       end
     end
@@ -144,7 +144,7 @@ describe Bound do
     UserWithProfile = Bound.required(:id).optional(
       :profile => Bound.required(:age)
     )
-    let(:hash) do
+    let(:the_hash) do
       {
         :id => 12,
         :profile => {
@@ -154,24 +154,24 @@ describe Bound do
     end
 
     it 'sets optional attributes' do
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = UserWithProfile.new(subject)
 
-        assert_equal hash[:profile][:age], user.profile.age
+        assert_equal the_hash[:profile][:age], user.profile.age
       end
     end
 
     it 'works if optional attribute is missing' do
-      hash.delete :profile
+      the_hash.delete :profile
 
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         UserWithProfile.new(subject)
       end
     end
 
     it 'fails if argument of optional nested bound is missing' do
-      hash[:profile].delete(:age)
-      [hash, object].each do |subject|
+      the_hash[:profile].delete(:age)
+      [the_hash, object].each do |subject|
         error = assert_raises ArgumentError do
           UserWithProfile.new(subject)
         end
@@ -182,10 +182,10 @@ describe Bound do
 
   describe 'no attributes' do
     UserWithoutAttributes = Bound.new
-    let(:hash) { Hash.new }
+    let(:the_hash) { Hash.new }
 
     it 'works without attributes' do
-      [hash, object, nil].each do |subject|
+      [the_hash, object, nil].each do |subject|
         UserWithoutAttributes.new(subject)
       end
     end
@@ -198,21 +198,21 @@ describe Bound do
   describe 'nested attribute' do
     Company       = Bound.required(:name, :address => Bound.required(:street))
     EmployedUser  = Bound.required(:uid, :company => Company)
-    let(:hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
+    let(:the_hash) { {:uid => '1', :company => {:name => 'featurepoly', :address => {:street => 'Germany'}}} }
 
     it 'works with nested attributes' do
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = EmployedUser.new(subject)
 
-        assert_equal hash[:uid],                        user.uid
-        assert_equal hash[:company][:name],             user.company.name
-        assert_equal hash[:company][:address][:street], user.company.address.street
+        assert_equal the_hash[:uid],                        user.uid
+        assert_equal the_hash[:company][:name],             user.company.name
+        assert_equal the_hash[:company][:address][:street], user.company.address.street
       end
     end
 
     it 'fails if nested attributes are missing' do
-      hash[:company].delete(:name)
-      [hash, object].each do |subject|
+      the_hash[:company].delete(:name)
+      [the_hash, object].each do |subject|
         error = assert_raises ArgumentError do
           user = EmployedUser.new(subject)
         end
@@ -221,8 +221,8 @@ describe Bound do
     end
 
     it 'does not cache values in the nested bound' do
-      user = EmployedUser.new(hash)
-      hash[:company][:name] = 'AAA'
+      user = EmployedUser.new(the_hash)
+      the_hash[:company][:name] = 'AAA'
       assert_equal 'AAA', user.company.name
 
       user = EmployedUser.new(object)
@@ -234,7 +234,7 @@ describe Bound do
   describe 'array of nested attribute' do
     Post          = Bound.required(:title)
     BloggingUser  = Bound.required(:name, :posts => [Post])
-    let(:hash) do
+    let(:the_hash) do
       {
         :name => 'Steve',
         :posts => [
@@ -245,18 +245,18 @@ describe Bound do
     end
 
     it 'works with array of nested attributes' do
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = BloggingUser.new(subject)
 
-        assert_equal hash[:name],             user.name
-        assert_equal hash[:posts][0][:title], user.posts[0].title
-        assert_equal hash[:posts][1][:title], user.posts[1].title
+        assert_equal the_hash[:name],             user.name
+        assert_equal the_hash[:posts][0][:title], user.posts[0].title
+        assert_equal the_hash[:posts][1][:title], user.posts[1].title
       end
     end
 
     it 'fails if nested bound is missing an attribute' do
-      hash[:posts][1].delete(:title)
-      [hash, object].each do |subject|
+      the_hash[:posts][1].delete(:title)
+      [the_hash, object].each do |subject|
         error = assert_raises ArgumentError do
           BloggingUser.new(subject)
         end
@@ -265,8 +265,8 @@ describe Bound do
     end
 
     it 'does not cache values in the array' do
-      user = BloggingUser.new(hash)
-      hash[:posts][0][:title] = 'AAA'
+      user = BloggingUser.new(the_hash)
+      the_hash[:posts][0][:title] = 'AAA'
       assert_equal 'AAA', user.posts[0].title
 
       user = BloggingUser.new(object)
@@ -275,13 +275,13 @@ describe Bound do
     end
 
     describe 'equality' do
-      let(:user) { BloggingUser.new(hash) }
+      let(:user) { BloggingUser.new(the_hash) }
       it 'is given if the nested attributes are equal' do
-        assert_equal BloggingUser.new(hash), user
+        assert_equal BloggingUser.new(the_hash), user
       end
 
       it 'is not given if nested attributes differ' do
-        second_hash = Marshal.load(Marshal.dump hash)
+        second_hash = Marshal.load(Marshal.dump the_hash)
         second_hash[:posts][0][:title] = 'DIFFERENT'
 
         refute_equal BloggingUser.new(second_hash), user
@@ -289,9 +289,9 @@ describe Bound do
     end
 
     it 'fails if posts is no array' do
-      hash[:posts] = {:title => 'broken'}
+      the_hash[:posts] = {:title => 'broken'}
 
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         exception = assert_raises ArgumentError do
           BloggingUser.new(subject)
         end
@@ -323,10 +323,10 @@ describe Bound do
   describe 'questionmark suffix' do
     WonderingUser = Bound.required(:asked?)
 
-    let(:hash)    { {:asked? => "YES"} }
+    let(:the_hash)    { {:asked? => "YES"} }
 
     it 'is assign- and readable' do
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = WonderingUser.new(subject)
         assert_equal "YES", user.asked?
       end
@@ -352,12 +352,12 @@ describe Bound do
   describe 'seeding with multiple seeds' do
     FunnyUser = Bound.required(:joke, :nose_color)
 
-    let(:hash) { {:joke => 'Text', :nose_color => 'blue'} }
+    let(:the_hash) { {:joke => 'Text', :nose_color => 'blue'} }
 
     it 'overwrites attributes from first to last' do
       overwriting_hash = {:nose_color => 'RED'}
 
-      [hash, object].each do |subject|
+      [the_hash, object].each do |subject|
         user = FunnyUser.new(subject, overwriting_hash)
 
         assertion_description = [subject, overwriting_hash].inspect
