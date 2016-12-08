@@ -137,6 +137,12 @@ become more rigid and solid. The mocking part on the consumer-side would only
 occur for the actual `register_account` call, which is fairly trivial now from
 the perspective of boundaries (known object in, known object out).
 
+## Older versions
+
+Because of legacy software we also support some older versions:
+
+* [stable-1.1](https://github.com/neopoly/bound/tree/stable-1.1) with latest version 1.1.1
+
 ## Contributing
 
 1. Fork it
