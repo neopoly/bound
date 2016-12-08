@@ -8,5 +8,6 @@ task :default => :spec
 Rake::TestTask.new(:spec) do |test|
   test.test_files = FileList["spec/**/*_spec.rb"]
   test.libs << "spec"
+  test.warning = true
   test.verbose = true
 end

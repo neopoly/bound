@@ -29,6 +29,7 @@ class Bound
 
       def initialize(name)
         @name = name
+        @assigned = false
       end
 
       def assign(value)
