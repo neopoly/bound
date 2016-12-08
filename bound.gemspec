@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Jakob Holderbaum", "Jan Owiesniak"]
   spec.email         = ["jh@neopoly.de", "jo@neopoly.de"]
   spec.summary       = %q{Implements a nice helper for fast boundary definitions}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/neopoly/bound"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
