@@ -214,7 +214,7 @@ describe Bound do
       the_hash[:company].delete(:name)
       [the_hash, object].each do |subject|
         error = assert_raises ArgumentError do
-          user = EmployedUser.new(subject)
+          EmployedUser.new(subject)
         end
         assert_match(/missing/i, error.message)
       end
