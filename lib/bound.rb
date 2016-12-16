@@ -179,9 +179,9 @@ class Bound
     end
 
     def self.define_validator
-      attributes = symbolize_attributes(@attributes)
-      optional_attributes = symbolize_attributes(@optional_attributes)
-      nested_array_attributes = symbolize_attributes(@nested_array_attributes)
+      attributes = symbolize_attributes(@attributes ||= [])
+      optional_attributes = symbolize_attributes(@optional_attributes ||= [])
+      nested_array_attributes = symbolize_attributes(@nested_array_attributes ||= [])
 
       code = <<-EOR
         def validate!
@@ -197,7 +197,7 @@ class Bound
     end
 
     def self.symbolize_attributes(attributes)
-      (attributes || []).map { |attr| ":#{attr}" }.join(", ")
+      attributes.map { |attr| ":#{attr}" }.join(", ")
     end
 
     def self.set_required_attributes(attributes, nested_array_attributes)
