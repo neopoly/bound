@@ -220,6 +220,7 @@ class Bound
 
     def self.define_equality(attr)
       @equality ||= []
+      remove_method(:==) unless @equality.empty?
       @equality << attr
       code = <<-EOR
         def ==(other)
