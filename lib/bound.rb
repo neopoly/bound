@@ -183,6 +183,8 @@ class Bound
       optional_attributes = symbolize_attributes(@optional_attributes ||= [])
       nested_array_attributes = symbolize_attributes(@nested_array_attributes ||= [])
 
+      undef_method :validate!
+
       code = <<-EOR
         def validate!
           v = Bound::BoundValidator.new(self, @t, @o)
@@ -220,8 +222,8 @@ class Bound
 
     def self.define_equality(attr)
       @equality ||= []
-      remove_method(:==) unless @equality.empty?
       @equality << attr
+      undef_method :==
       code = <<-EOR
         def ==(other)
           return false unless other
