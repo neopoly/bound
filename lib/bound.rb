@@ -239,9 +239,15 @@ class Bound
     def self.define_delegate(attr, prefix = '')
       code = <<-EOR
         def #{prefix}#{attr}
-          return @o[:#{attr}] if @o && @o.key?(:#{attr})
-          return @t.kind_of?(Hash) ? @t[:#{attr}] : @t.respond_to?(:#{attr}) ? @t.#{attr} : nil if @t
-          nil
+          if @o && @o.key?(:#{attr})
+            @o[:#{attr}]
+          elsif @t
+            if @t.kind_of?(Hash)
+              @t[:#{attr}]
+            elsif @t.respond_to?(:#{attr})
+              @t.#{attr}
+            end
+          end
         end
       EOR
       class_eval code, __FILE__, __LINE__ - 6
