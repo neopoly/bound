@@ -240,7 +240,7 @@ class Bound
       code = <<-EOR
         def #{prefix}#{attr}
           return @o[:#{attr}] if @o && @o.key?(:#{attr})
-          return @t.kind_of?(Hash) ? @t[:#{attr}] : @t.#{attr} if @t
+          return @t.kind_of?(Hash) ? @t[:#{attr}] : @t.respond_to?(:#{attr}) ? @t.#{attr} : nil if @t
           nil
         end
       EOR
