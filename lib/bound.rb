@@ -244,7 +244,7 @@ class Bound
           nil
         end
       EOR
-      class_eval code
+      class_eval code, __FILE__, __LINE__ - 6
     end
 
     def self.define_nested_delegate(attr, nested_class)
