@@ -366,5 +366,21 @@ describe Bound do
     end
   end
 
+  describe 'bug: raises error if optional attribute does not exist in input' do
+    Person = Bound.optional(:gender)
+
+    let(:the_hash) { {} }
+    let(:object)   { HashObject.new({}) }
+
+    it 'for object' do
+      person = Person.new(object)
+      assert_nil person.gender
+    end
+
+    it 'for hash' do
+      person = Person.new(the_hash)
+      assert_nil person.gender
+    end
+  end
 
 end
