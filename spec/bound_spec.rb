@@ -29,7 +29,7 @@ describe Bound do
     the_hash.delete :age
 
     [the_hash, object].each do |subject|
-      exception = assert_raises ArgumentError, subject.inspect do
+      exception = assert_raises MissingAttributeError, subject.inspect do
         User.new(subject)
       end
 
@@ -49,7 +49,7 @@ describe Bound do
     the_hash[:gender] = "M"
     subject = the_hash
 
-    exception = assert_raises ArgumentError, subject.inspect do
+    exception = assert_raises UnknownAttributeError, subject.inspect do
       User.new(subject)
     end
 
@@ -172,7 +172,7 @@ describe Bound do
     it 'fails if argument of optional nested bound is missing' do
       the_hash[:profile].delete(:age)
       [the_hash, object].each do |subject|
-        error = assert_raises ArgumentError do
+        error = assert_raises MissingAttributeError do
           UserWithProfile.new(subject)
         end
         assert_match(/missing/i, error.message)
@@ -213,7 +213,7 @@ describe Bound do
     it 'fails if nested attributes are missing' do
       the_hash[:company].delete(:name)
       [the_hash, object].each do |subject|
-        error = assert_raises ArgumentError do
+        error = assert_raises MissingAttributeError do
           EmployedUser.new(subject)
         end
         assert_match(/missing/i, error.message)
@@ -257,7 +257,7 @@ describe Bound do
     it 'fails if nested bound is missing an attribute' do
       the_hash[:posts][1].delete(:title)
       [the_hash, object].each do |subject|
-        error = assert_raises ArgumentError do
+        error = assert_raises MissingAttributeError do
           BloggingUser.new(subject)
         end
         assert_match(/missing/i, error.message)
