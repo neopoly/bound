@@ -1,5 +1,6 @@
 require "bound/version"
 require "bound/caller"
+require "bound/errors"
 
 class Bound
   def self.new(*args)
@@ -58,7 +59,7 @@ class Bound
       a.each do |attr|
         unless b.include? attr
           message = "Unknown attribute: #{attr.inspect} in #{b}"
-          raise ArgumentError, message
+          raise UnknownAttributeError, message
         end
       end
     end
@@ -66,7 +67,7 @@ class Bound
     def ensure_present!(attribute)
       if !overwritten?(attribute) && !target_has?(attribute)
         message = "Missing attribute: #{attribute}"
-        raise ArgumentError, message
+        raise MissingAttributeError, message
       end
     end
 
