@@ -150,3 +150,12 @@ Because of legacy software we also support some older versions:
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## Release
+
+```
+# Bump version
+edit lib/bound/version.rb
+git commit -am "Bump to version X.Y.Z"
+rake release
+```
